@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TextProps, TextStyle, View } from 'react-native'
 import React, { Children, FC } from 'react'
 import { s, vs } from "react-native-size-matters";
+import { AppColors } from '../../styles/colors';
 
 interface AppTextProps extends TextProps {
   children: React.ReactNode;
@@ -15,11 +16,9 @@ const AppText: FC<AppTextProps> = ({
   ...rest
 }) => {
   return (
-    <View>
-      <Text {...rest} style={[styles[variant], style]}>
-        {children}
-      </Text>
-    </View>
+    <Text {...rest} style={[styles[variant], style]}>
+      {children}
+    </Text>
   );
 };
 
@@ -29,10 +28,10 @@ const styles = StyleSheet.create({
   bold: {
     fontSize: s(18),
     fontWeight: "bold",
-    color: "#000",
+    color: AppColors.primary,
   },
   medium: {
     fontSize: s(16),
-    color: "#000",
+    color: AppColors.primary,
   },
 });
