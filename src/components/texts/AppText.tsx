@@ -4,7 +4,7 @@ import { s, vs } from "react-native-size-matters";
 import { AppColors } from '../../styles/colors';
 
 interface AppTextProps extends TextProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: TextStyle | TextStyle[];
   variant?: "bold" | "medium";
 }

@@ -5,9 +5,9 @@ import AppText from '../texts/AppText';
 import { AppColors } from '../../styles/colors';
 
 interface AppButtonProps {
-  onPress: () => void;
+  onPress?: () => void;
   style?: TextStyle | TextStyle[];
-  title: string;
+  title?: string;
   backgroundColor?: string;
   textColor?: string;
   titleStyle?: TextStyle | TextStyle[];
@@ -43,7 +43,7 @@ export default AppButton
 
 const styles = StyleSheet.create({
   button: {
-    width: "50%",
+    width: "85%",
     height: vs(40),
     justifyContent: "center",
     alignItems: "center",

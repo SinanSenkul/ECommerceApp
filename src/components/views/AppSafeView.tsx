@@ -1,6 +1,7 @@
-import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native'
+import { Keyboard, Pressable, StatusBar, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { FC } from 'react'
 import { isAndroid } from '../../constants/constants';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface AppSafeViewProps {
   children: React.ReactNode;
@@ -9,9 +10,9 @@ interface AppSafeViewProps {
 
 const AppSafeView: FC<AppSafeViewProps> = ({ children, style }) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <Pressable onPress={Keyboard.dismiss}  style={styles.safeArea}>
       <View style={[styles.viewMain, style]}>{children}</View>
-    </SafeAreaView>
+    </Pressable>
   );
 };
 
@@ -24,6 +25,6 @@ const styles = StyleSheet.create({
     paddingTop: isAndroid ? StatusBar.currentHeight || 0 : 0, //currentHeight is Android specific
   },
   viewMain: {
-    flex: 1,
+    
   },
 });
