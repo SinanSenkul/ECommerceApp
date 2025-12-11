@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import HomeHeader from '../../components/headers/HomeHeader'
+import AppSafeView from '../../components/views/AppSafeView'
 
 const CartScreen = () => {
   return (
-    <View>
-      <Text>CartScreen</Text>
-    </View>
+    <AppSafeView>
+      <HomeHeader/>
+    </AppSafeView>
   )
 }
 

@@ -27,7 +27,7 @@ const navigation = useNavigation();
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title="Login" />
+      <AppButton title="Login" onPress={() => navigation.navigate("MainAppBottomTabs")}/>
       <AppButton
         title="Sign Up"
         onPress={() => navigation.navigate("SignUpScreen")}
