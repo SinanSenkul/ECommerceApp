@@ -1,28 +1,41 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { FC, useState } from 'react'
 import { s,vs } from 'react-native-size-matters'
 import { AppColors } from '../../styles/colors'
 import AppText from '../texts/AppText'
 import { AppFonts } from '../../styles/fonts'
 import { Ionicons } from '@expo/vector-icons'
+import { AppStyles } from '../../styles/sharedStyles'
 
-const ProductCard = () => {
+interface ProductCardProps {
+  price: number;
+  title: string;
+  imageURL: string;
+  onAddToCartPress: () => void;
+}
+
+const ProductCard: FC<ProductCardProps> = ({price, title, imageURL, onAddToCartPress}) => {
+  const [imgSource, setImgSource] = useState(imageURL);
+  const handleImageError=()=>{
+    setImgSource("https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg")
+  }
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, AppStyles.shadow]}>
       <View style={styles.imageContainer}>
-        <TouchableOpacity style={styles.addToCartButton}>
+        <TouchableOpacity style={styles.addToCartButton} onPress={onAddToCartPress}>
           <Ionicons name="cart-outline" color={AppColors.white} size={s(15)} />
         </TouchableOpacity>
         <Image
           style={styles.image}
           source={{
-            uri: "https://st-troy.mncdn.com/Content/media/ProductImg/original/mywx3tua-iphone-16-pro-max-256gb-desert-titanium-638617358742681589.jpg?width=785",
+            uri: imgSource,
           }}
+          onError={handleImageError}
         />
       </View>
       <View style={styles.detailsContainer}>
-        <AppText style={styles.titleText}>iphone 15</AppText>
-        <AppText style={styles.priceText}>15 ₺</AppText>
+        <AppText style={styles.titleText}>{title}</AppText>
+        <AppText style={styles.priceText}>{price} ₺</AppText>
       </View>
     </View>
   );
@@ -37,6 +50,8 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     borderRadius: s(10),
     borderWidth: s(0.5),
+    marginTop: vs(3),
+    marginHorizontal: vs(3),
   },
   imageContainer: {
     overflow: "hidden",
