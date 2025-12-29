@@ -8,9 +8,15 @@ import { FlatList } from "react-native-gesture-handler";
 import { products } from "../../data/products";
 import { s, vs } from "react-native-size-matters";
 import { showMessage } from "react-native-flash-message";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { addItem } from "../../store/reducers/cartSlice";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const {items} = useSelector((state: RootState) => state.cartSlice);
+  const dispatch = useDispatch();
+
   return (
     <AppSafeView style={styles.container}>
       <HomeHeader />
@@ -18,9 +24,9 @@ const HomeScreen = () => {
         columnWrapperStyle={{
           justifyContent: "space-between",
           marginBottom: vs(5),
-          paddingHorizontal:s(3)
+          paddingHorizontal: s(3),
         }}
-         contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 80 }}
         numColumns={2}
         data={products}
         renderItem={({ item }) => (
@@ -28,15 +34,17 @@ const HomeScreen = () => {
             price={item.price}
             title={item.title}
             imageURL={item.imageURL}
-            onAddToCartPress={() =>
+            qty={item.qty}
+            onAddToCartPress={() => {
               showMessage({
                 message: "Added to Card",
                 type: "success",
                 duration: 1000,
                 floating: true,
                 icon: "success",
-              })
-            }
+              });
+              dispatch(addItem(item));
+            }}
           />
         )}
         keyExtractor={(item) => item.id.toString()}

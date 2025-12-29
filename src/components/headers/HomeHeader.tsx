@@ -1,15 +1,18 @@
-import { StyleSheet, Image } from "react-native";
+import { StyleSheet, Image, TouchableOpacity } from "react-native";
 import React from "react";
 import { AppColors } from "../../styles/colors";
 import { s, vs } from "react-native-size-matters";
 import { images } from "../../constants/image-paths";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeHeader = () => {
-  //
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.container}>
-      <Image source={images.appLogo} style={styles.logo} />
+      <TouchableOpacity onPress={() => navigation.navigate("MainAppBottomTabs")}>
+        <Image source={images.appLogo} style={styles.logo} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

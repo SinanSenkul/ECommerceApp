@@ -16,5 +16,5 @@ export const AppStyles = StyleSheet.create({
 
     //Android
     elevation: 4,
-  },
+  }
 });

@@ -1,38 +1,63 @@
 import { StyleSheet, Text, View, Image, Pressable } from 'react-native'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { s, vs } from "react-native-size-matters";
 import AppText from '../texts/AppText';
 import { AppColors } from '../../styles/colors';
 import { AppFonts } from '../../styles/fonts';
 import { AntDesign } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 
-interface ICartItem{
-    imageURL?: string,
-    title?: string,
-    price?: number,
-
+interface ICartItem {
+  imageURL?: string;
+  title?: string;
+  price?: number | string;
+  qty?: number;
+  onDeletePress?: () => void;
+  onIncreasePress?: () => void;
+  onDecreasePress?: () => void;
 }
 
-const CartItem: FC<ICartItem> = ({imageURL, title, price}) => {
+const CartItem: FC<ICartItem> = ({
+  imageURL,
+  title,
+  price,
+  qty,
+  onDeletePress,
+  onIncreasePress,
+  onDecreasePress,
+}) => {
+  const [imgSource, setImgSource] = useState(imageURL);
+  const handleImageError=()=>{
+    setImgSource("https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg")
+  }
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container}>
       {/* image container */}
       <View style={styles.imageContainer}>
-        <Image source={{ uri: imageURL }} style={styles.image} />
+        <Image source={{ uri: imgSource }} onError={handleImageError} style={styles.image} />
       </View>
       {/* details container */}
       <View style={styles.detailsContainer}>
         <AppText style={styles.title}>{title}</AppText>
-        <AppText style={styles.price}>{price}</AppText>
+        <AppText style={styles.price}>{price}₺</AppText>
+        <View style={styles.qtyContainer}>
+          <Pressable style={styles.qtyButton} onPress={onIncreasePress}>
+            <FontAwesome name="plus" size={s(14)} color={AppColors.primary} />
+          </Pressable>
+          <AppText style={styles.qtyNumber}>{qty}</AppText>
+          <Pressable style={styles.qtyButton} onPress={onDecreasePress}>
+            <FontAwesome name="minus" size={s(14)} color={AppColors.primary} />
+          </Pressable>
+        </View>
       </View>
       {/* delete button container */}
       <View style={styles.deleteContainer}>
-        <Pressable style={styles.deletePressable}>
-          <AntDesign name="delete" size={s(14)} color={AppColors.red}/>
+        <Pressable style={styles.deletePressable} onPress={onDeletePress}>
+          <AntDesign name="delete" size={s(14)} color={AppColors.red} />
           <AppText style={styles.deleteText}>Delete</AppText>
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -86,5 +111,30 @@ const styles = StyleSheet.create({
   deletePressable: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  qtyContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: s(5),
+    borderRadius: s(30),
+    borderWidth: s(1),
+    borderColor: AppColors.blueGray,
+    width: s(80),
+    paddingVertical: vs(5),
+  },
+  qtyButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: AppColors.lightGray,
+    padding: s(5),
+    height: s(22),
+    width: s(22),
+    borderRadius: s(11),
+  },
+  qtyNumber: {
+    flex: 1,
+    textAlign: "center",
+    color: AppColors.primary,
   },
 });

@@ -6,23 +6,36 @@ import AppText from '../texts/AppText'
 import { AppFonts } from '../../styles/fonts'
 import { Ionicons } from '@expo/vector-icons'
 import { AppStyles } from '../../styles/sharedStyles'
+import { useSelector } from 'react-redux'
 
 interface ProductCardProps {
   price: number;
   title: string;
   imageURL: string;
   onAddToCartPress: () => void;
+  qty: number
 }
 
-const ProductCard: FC<ProductCardProps> = ({price, title, imageURL, onAddToCartPress}) => {
+const ProductCard: FC<ProductCardProps> = ({
+  price,
+  title,
+  imageURL,
+  qty=0,
+  onAddToCartPress,
+}) => {
   const [imgSource, setImgSource] = useState(imageURL);
-  const handleImageError=()=>{
-    setImgSource("https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg")
-  }
+  const handleImageError = () => {
+    setImgSource(
+      "https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg"
+    );
+  };
   return (
     <View style={[styles.container, AppStyles.shadow]}>
       <View style={styles.imageContainer}>
-        <TouchableOpacity style={styles.addToCartButton} onPress={onAddToCartPress}>
+        <TouchableOpacity
+          style={styles.addToCartButton}
+          onPress={onAddToCartPress}
+        >
           <Ionicons name="cart-outline" color={AppColors.white} size={s(15)} />
         </TouchableOpacity>
         <Image
@@ -39,7 +52,7 @@ const ProductCard: FC<ProductCardProps> = ({price, title, imageURL, onAddToCartP
       </View>
     </View>
   );
-}
+};
 
 export default ProductCard
 
@@ -93,5 +106,5 @@ const styles = StyleSheet.create({
     zIndex:1,
     alignItems:"center",
     justifyContent:"center"
-  },
+  }
 });
