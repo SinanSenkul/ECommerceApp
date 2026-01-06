@@ -5,8 +5,6 @@ import AppText from '../texts/AppText';
 import { AppColors } from '../../styles/colors';
 import { AppFonts } from '../../styles/fonts';
 import { tax, fee } from '../../constants/constants';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
 
 interface ITotalView {
   price?: number;
@@ -14,15 +12,6 @@ interface ITotalView {
 }
 
 const TotalsView: FC<ITotalView> = ({ price, sum }) => {
-  const {totalPrice} = useSelector((state: RootState) => state.cartSlice);
-  const {items} = useSelector((state: RootState) => state.cartSlice);
-  let total = 0;
-  items.map(item=>{
-    total = total + item.price * item.qty
-  })
-  
-  price = total;
-  sum = price > 0 ? total + tax + fee : 0;
   
   return (
     <View style={styles.container}>

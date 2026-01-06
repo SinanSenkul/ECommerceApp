@@ -30,7 +30,10 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "sinan" }) => {
           onPress={() => navigation.navigate("MyOrdersScreen")}
         />
         <ProfileSectionButton title="Language" />
-        <ProfileSectionButton title="Log Out" />
+        <ProfileSectionButton 
+        title="Log Out" 
+        onPress={() => navigation.navigate("AuthStack")}
+        />
       </View>
       <AppButton title="Back" style={{marginTop: vs(5)}} onPress={()=>navigation.navigate("MainAppBottomTabs")} />
     </AppSafeView>

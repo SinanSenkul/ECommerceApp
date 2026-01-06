@@ -12,15 +12,18 @@ import { useNavigation } from '@react-navigation/native'
 import { vs } from 'react-native-size-matters'
 import { RootState } from '../../store/store'
 import { useDispatch, useSelector } from "react-redux";
-import { decreaseQty, deleteItem, increaseQty, removeNoQtyItem } from '../../store/reducers/cartSlice'
+import { decreaseQty, deleteItem, increaseQty } from '../../store/reducers/cartSlice'
+import { fee, tax } from '../../constants/constants'
+import { AppColors } from '../../styles/colors'
 
 
 const CartScreen = () => {
   const navigation = useNavigation();
   const {items} = useSelector((state: RootState) => state.cartSlice);
-  
+  const price = items.reduce((acc, item) => acc + item.price * item.qty, 0); //sum up all the prices
+  const sum = price > 0 ? price + tax + fee : 0;
+
   const dispatch = useDispatch();
- 
 
   return (
     <AppSafeView style={{ flex: 1, flexDirection: "column" }}>
@@ -31,27 +34,37 @@ const CartScreen = () => {
           flex: 1,
         }}
       >
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={items}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <CartItem
-              {...item}
-              price={item.price * item.qty}
-              onDeletePress={() => dispatch(deleteItem(item.id))}
-              onIncreasePress={() => dispatch(increaseQty(item))}
-              onDecreasePress={() => dispatch(decreaseQty(item))}
+        {items.length > 0 ? (
+          <>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              data={items}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <CartItem
+                  {...item}
+                  price={item.price * item.qty}
+                  onDeletePress={() => dispatch(deleteItem(item.id))}
+                  onIncreasePress={() => dispatch(increaseQty(item))}
+                  onDecreasePress={() => dispatch(decreaseQty(item))}
+                />
+              )}
             />
-          )}
-        />
+            <TotalsView price={price} sum={sum} />
+            <AppButton
+              title="Pay"
+              onPress={() =>
+                sum > 0 ? navigation.navigate("CheckoutScreen") : null
+              }
+              style={
+                sum > 0 ? styles.payButtonActive : styles.payButtonInactive
+              }
+            />
+          </>
+        ) : (
+          <EmptyCart />
+        )}
       </View>
-      <TotalsView />
-      <AppButton
-        title="Pay"
-        onPress={() => navigation.navigate("CheckoutScreen")}
-        style={styles.payButton}
-      />
     </AppSafeView>
   );
 };
@@ -59,7 +72,11 @@ const CartScreen = () => {
 export default CartScreen
 
 const styles = StyleSheet.create({
-  payButton: {
+  payButtonActive: {
     marginVertical: vs(5),
   },
+  payButtonInactive:{
+    marginVertical: vs(5),
+    backgroundColor: AppColors.disabledGray
+  }
 });

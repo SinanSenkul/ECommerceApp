@@ -9,8 +9,33 @@ import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import { AppColors } from "../../styles/colors";
 import { useNavigation } from "@react-navigation/native";
+import AppTextInputController from '../../components/inputs/AppTextInputController';
+import { useForm } from 'react-hook-form';
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const schema = yup
+  .object({
+    userName: yup.string().required("Username is required!"),
+    emailAddress: yup.string().email("This is not a valid email!").required("Email is required!").matches(
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            "Invalid email format"
+          ),
+    password: yup.string().required("Password is required!"),
+  }).required();
+
+  type formData = yup.InferType<typeof schema>;
 
 const SignUpScreen = () => {
+
+  const { control, handleSubmit } = useForm({
+        resolver: yupResolver(schema)
+      });
+  
+  const signUp = (formData: typeof yup.string) => {
+    console.log(formData);
+    navigation.navigate("MainAppBottomTabs");
+  };
 
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
@@ -21,18 +46,30 @@ const navigation = useNavigation();
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
-      <AppTextInput placeholder="Username" onChangeText={setUsername} />
-      <AppTextInput placeholder="Email" onChangeText={setEmail} />
-      <AppTextInput
+      <AppTextInputController
+        control={control}
+        name={"userName"}
+        placeholder="Username"
+      />
+      <AppTextInputController
+        control={control}
+        name={"emailAddress"}
+        placeholder="Email"
+      />
+      <AppTextInputController
+        control={control}
+        name={"password"}
         placeholder="Password"
-        onChangeText={setPassword}
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title="Create New Account" />
+      <AppButton 
+        title="Create New Account" 
+        onPress={handleSubmit(signUp)} 
+      />
       <AppButton
         title="Go to Sign In"
-         onPress={() => navigation.navigate("SignInScreen")}
+        onPress={() => navigation.navigate("SignInScreen")}
         style={styles.signInButton}
         textColor={AppColors.primary}
       />

@@ -9,25 +9,60 @@ import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import { AppColors } from "../../styles/colors";
 import { useNavigation } from "@react-navigation/native";
+import AppTextInputController from '../../components/inputs/AppTextInputController';
+import { useForm } from 'react-hook-form';
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const schema = yup
+  .object({
+    userName: yup.string().required("Username is required!"),
+    password: yup.string().required("Password is required!"),
+  }).required();
+
+  type formData = yup.InferType<typeof schema>;
 
 const SignInScreen = () => {
 
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigation = useNavigation();
+
+  const { control, handleSubmit } = useForm({
+      resolver: yupResolver(schema)
+    });
+
+    const signIn =(formData)=>{
+    console.log(formData);
+    navigation.navigate("MainAppBottomTabs")
+  }
 
 // user will be able to type either his username or email here
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
-      <AppTextInput placeholder="Username or Email" onChangeText={setEmail} />
-      <AppTextInput
+      {/* <AppTextInput placeholder="Username or Email" onChangeText={setEmail} /> */}
+      <AppTextInputController
+        control={control}
+        name={"userName"}
+        placeholder="Username or Email"
+      />
+      {/* <AppTextInput
         placeholder="Password"
         onChangeText={setPassword}
         secureTextEntry
+      /> */}
+      <AppTextInputController
+        control={control}
+        name={"password"}
+        placeholder="Password"
+        secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title="Login" onPress={() => navigation.navigate("MainAppBottomTabs")}/>
+      <AppButton
+        title="Login"
+        onPress={handleSubmit(signIn)}
+      />
       <AppButton
         title="Sign Up"
         onPress={() => navigation.navigate("SignUpScreen")}

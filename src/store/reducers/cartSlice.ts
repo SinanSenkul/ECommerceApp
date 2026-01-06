@@ -10,12 +10,10 @@ interface CartItem {
 
 interface CartState {
   items: CartItem[];
-  totalPrice: number;
 }
 
 const state : CartState = {
     items:[],
-    totalPrice : 0
 }
 
 const cartSlice = createSlice({
@@ -28,10 +26,8 @@ const cartSlice = createSlice({
       );
       if (!itemInCart) {
         state.items.push({ ...action.payload, qty: 1 });
-        state.totalPrice = action.payload.price;
       } else {
         itemInCart.qty++;
-        state.totalPrice = action.payload.price;
       }
     },
     deleteItem: (state, action) => {
