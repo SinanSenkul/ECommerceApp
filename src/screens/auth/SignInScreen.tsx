@@ -1,10 +1,9 @@
-import { StyleSheet, Text, Image } from "react-native";
+import { StyleSheet, Text, Image, Alert, View } from "react-native";
 import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
 import { s,vs } from "react-native-size-matters";
-import AppTextInput from "../../components/inputs/AppTextInput";
 import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import { AppColors } from "../../styles/colors";
@@ -13,6 +12,10 @@ import AppTextInputController from '../../components/inputs/AppTextInputControll
 import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config/firebase";
+import { showMessage } from "react-native-flash-message";
+
 
 const schema = yup
   .object({
@@ -32,26 +35,47 @@ const SignInScreen = () => {
       resolver: yupResolver(schema)
     });
 
-    const signIn =(formData)=>{
-    console.log(formData);
-    navigation.navigate("MainAppBottomTabs")
+    const signIn = async (data: formData)=>{
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.userName,
+        data.password
+      );
+      navigation.navigate("MainAppBottomTabs");
+      console.log(userCredential);
+      setInvalid(false);
+    } catch (error) {
+      let errorMessage = "";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "User not found";
+      } else if (error.code === "auth/invalid-credential") {
+        errorMessage = "Username or password is wrong";
+      } else{
+        errorMessage = "Something seems wrong";
+      }
+      showMessage({
+        message: errorMessage,
+        type: "danger",
+        duration: 1000,
+        floating: true,
+        icon: "danger",
+        position: "top",
+      });
+    }
+    
   }
 
 // user will be able to type either his username or email here
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
-      {/* <AppTextInput placeholder="Username or Email" onChangeText={setEmail} /> */}
       <AppTextInputController
         control={control}
         name={"userName"}
         placeholder="Username or Email"
       />
-      {/* <AppTextInput
-        placeholder="Password"
-        onChangeText={setPassword}
-        secureTextEntry
-      /> */}
       <AppTextInputController
         control={control}
         name={"password"}
@@ -59,10 +83,7 @@ const SignInScreen = () => {
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton
-        title="Login"
-        onPress={handleSubmit(signIn)}
-      />
+      <AppButton title="Login" onPress={handleSubmit(signIn)} />
       <AppButton
         title="Sign Up"
         onPress={() => navigation.navigate("SignUpScreen")}

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Image } from "react-native";
+import { StyleSheet, Text, Image, Alert } from "react-native";
 import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
@@ -13,15 +13,17 @@ import AppTextInputController from '../../components/inputs/AppTextInputControll
 import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { auth } from "../../config/firebase";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { showMessage } from "react-native-flash-message";
 
 const schema = yup
   .object({
-    userName: yup.string().required("Username is required!"),
     emailAddress: yup.string().email("This is not a valid email!").required("Email is required!").matches(
             /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
             "Invalid email format"
           ),
-    password: yup.string().required("Password is required!"),
+    password: yup.string().required("Password is required!").min(6, 'Password must be at least 6 characters long'),
   }).required();
 
   type formData = yup.InferType<typeof schema>;
@@ -32,25 +34,51 @@ const SignUpScreen = () => {
         resolver: yupResolver(schema)
       });
   
-  const signUp = (formData: typeof yup.string) => {
-    console.log(formData);
-    navigation.navigate("MainAppBottomTabs");
+  const signUp = async (data: formData) => {
+    if (!data.emailAddress || !data.password ) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+ try {
+      const auth = getAuth();
+      const userCredential =  createUserWithEmailAndPassword(auth, data.emailAddress.trim(), data.password);
+      showMessage({
+              message: 'Account created successfully!',
+              type: "success",
+              duration: 1000,
+              floating: true,
+              icon: "success",
+              position: "top",
+            });
+      // Navigate to login or home screen
+      navigation.navigate('MainAppBottomTabs');
+      return (await userCredential).user;
+    } catch (error) {
+      let message = "Sign-up failed";
+      if (error.code === "auth/email-already-in-use") {
+        message = "Email is already in use";
+      } else if (error.code === "auth/weak-password") {
+        message = "Password is too weak (min 6 characters)";
+      } else if (error.code === "auth/invalid-email") {
+        message = "Invalid email address";
+      }
+      showMessage({
+        message: message,
+        type: "danger",
+        duration: 1000,
+        floating: true,
+        icon: "danger",
+        position: "top",
+      });
+    }
+    // navigation.navigate("MainAppBottomTabs");
   };
-
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const [username, setUsername] = useState("");
 
 const navigation = useNavigation();
 
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
-      <AppTextInputController
-        control={control}
-        name={"userName"}
-        placeholder="Username"
-      />
       <AppTextInputController
         control={control}
         name={"emailAddress"}
