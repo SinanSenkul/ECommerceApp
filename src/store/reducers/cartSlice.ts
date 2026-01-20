@@ -12,9 +12,9 @@ interface CartState {
   items: CartItem[];
 }
 
-const state : CartState = {
-    items:[],
-}
+const state: CartState = {
+  items: [],
+};
 
 const cartSlice = createSlice({
   name: "cart",
@@ -22,7 +22,7 @@ const cartSlice = createSlice({
   reducers: {
     addItem: (state, action) => {
       const itemInCart = state.items.find(
-        (item) => item.id === action.payload.id
+        (item) => item.id === action.payload.id,
       );
       if (!itemInCart) {
         state.items.push({ ...action.payload, qty: 1 });
@@ -33,23 +33,25 @@ const cartSlice = createSlice({
     deleteItem: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
+    emptyItems: (state) => {
+      state.items = [];
+    },
     increaseQty: (state, action) => {
-      state.items = state.items.map(item =>
-        item.id === action.payload.id
-          ? { ...item, qty: item.qty + 1 }
-          : item
+      state.items = state.items.map((item) =>
+        item.id === action.payload.id ? { ...item, qty: item.qty + 1 } : item,
       );
     },
     decreaseQty: (state, action) => {
-      state.items = state.items.map(item =>
-        item.id === action.payload.id && item.qty>0
+      state.items = state.items.map((item) =>
+        item.id === action.payload.id && item.qty > 0
           ? { ...item, qty: item.qty - 1 }
-          : item
+          : item,
       );
       state.items = state.items.filter((item) => item.qty > 0); //filter items with qty>0, delete 0 qty ones
     },
   },
 });
 
-export const {addItem, deleteItem, increaseQty, decreaseQty} = cartSlice.actions;
+export const { addItem, deleteItem, increaseQty, decreaseQty,emptyItems } =
+  cartSlice.actions;
 export default cartSlice.reducer;

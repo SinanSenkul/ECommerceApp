@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { FC } from 'react'
-import { s, vs } from 'react-native-size-matters'
-import { AppColors } from '../../styles/colors'
-import AppText from '../texts/AppText'
-import { AppFonts } from '../../styles/fonts'
-import { AppStyles } from '../../styles/sharedStyles'
+import { StyleSheet, Text, View } from "react-native";
+import React, { FC } from "react";
+import { s, vs } from "react-native-size-matters";
+import { AppColors } from "../../styles/colors";
+import AppText from "../texts/AppText";
+import { AppFonts } from "../../styles/fonts";
+import { AppStyles } from "../../styles/sharedStyles";
 
 interface IOrderItem {
   totalPrice?: number;
@@ -17,12 +17,12 @@ const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
       <AppText style={styles.title}>ORDER DETAILS:</AppText>
       <View style={styles.separator}></View>
       <AppText style={styles.text}>Total Price: {totalPrice} ₺</AppText>
-      <AppText style={styles.text}>Date: {date?.toDateString()}</AppText>
+      <AppText style={styles.text}>Date: {date}</AppText>
     </View>
   );
 };
 
-export default OrderItem
+export default OrderItem;
 
 const styles = StyleSheet.create({
   container: {
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     borderRadius: s(10),
     borderWidth: s(0.5),
-    marginTop:vs(5),
-    alignSelf:"center"
+    marginTop: vs(5),
+    alignSelf: "center",
   },
   separator: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -49,6 +49,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: AppFonts.Medium,
-    marginVertical:vs(2)
+    marginVertical: vs(2),
   },
 });

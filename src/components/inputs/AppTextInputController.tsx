@@ -1,18 +1,20 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { FC } from 'react'
-import {Control, Controller, FieldValues, Path} from 'react-hook-form'
-import AppTextInput from './AppTextInput'
-import { AppColors } from '../../styles/colors';
-import AppText from '../texts/AppText';
+import { StyleSheet, Text, View } from "react-native";
+import React, { FC } from "react";
+import { Control, Controller, FieldValues, Path } from "react-hook-form";
+import AppTextInput from "./AppTextInput";
+import { AppColors } from "../../styles/colors";
+import AppText from "../texts/AppText";
 import { s, vs } from "react-native-size-matters";
+import { auth } from "../../config/firebase";
 
-interface IAppTextInputController <T extends FieldValues> {
+interface IAppTextInputController<T extends FieldValues> {
   control: Control<T>; //T is used to make it generic it can work with with different data types
   name: Path<T>;
   rules?: object;
-  placeholder: string ;
+  placeholder: string;
   secureTextEntry?: boolean;
   keyboardType?: "default" | "email-address" | "numeric";
+  value?: string | any;
 }
 
 const AppTextInputController = <T extends FieldValues>({
@@ -22,12 +24,15 @@ const AppTextInputController = <T extends FieldValues>({
   placeholder,
   secureTextEntry,
   keyboardType,
+  value
 }: IAppTextInputController<T>) => {
+
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
+      defaultValue={value}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <>
           <AppTextInput
@@ -45,7 +50,7 @@ const AppTextInputController = <T extends FieldValues>({
   );
 };
 
-export default AppTextInputController
+export default AppTextInputController;
 
 const styles = StyleSheet.create({
   errorInput: {

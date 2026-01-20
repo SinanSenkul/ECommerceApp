@@ -3,56 +3,75 @@ import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
-import { s,vs } from "react-native-size-matters";
-import AppTextInput from "../../components/inputs/AppTextInput";
+import { s, vs } from "react-native-size-matters";
 import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import { AppColors } from "../../styles/colors";
 import { useNavigation } from "@react-navigation/native";
-import AppTextInputController from '../../components/inputs/AppTextInputController';
-import { useForm } from 'react-hook-form';
+import AppTextInputController from "../../components/inputs/AppTextInputController";
+import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { auth } from "../../config/firebase";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../../store/reducers/userSlice";
 
 const schema = yup
   .object({
-    emailAddress: yup.string().email("This is not a valid email!").required("Email is required!").matches(
-            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-            "Invalid email format"
-          ),
-    password: yup.string().required("Password is required!").min(6, 'Password must be at least 6 characters long'),
-  }).required();
+    emailAddress: yup
+      .string()
+      .email("This is not a valid email!")
+      .required("Email is required!")
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        "Invalid email format"
+      ),
+    password: yup
+      .string()
+      .required("Password is required!")
+      .min(6, "Password must be at least 6 characters long"),
+  })
+  .required();
 
-  type formData = yup.InferType<typeof schema>;
+type formData = yup.InferType<typeof schema>;
 
 const SignUpScreen = () => {
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const { control, handleSubmit } = useForm({
-        resolver: yupResolver(schema)
-      });
-  
+    resolver: yupResolver(schema),
+  });
+
   const signUp = async (data: formData) => {
-    if (!data.emailAddress || !data.password ) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!data.emailAddress || !data.password) {
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
- try {
-      const auth = getAuth();
-      const userCredential =  createUserWithEmailAndPassword(auth, data.emailAddress.trim(), data.password);
+    try {
+      //const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.emailAddress.trim(),
+        data.password
+      );
+      const userDataObj = {
+        uid: userCredential.user.uid,
+      };
+
+      dispatch(setUserData(userDataObj));
       showMessage({
-              message: 'Account created successfully!',
-              type: "success",
-              duration: 1000,
-              floating: true,
-              icon: "success",
-              position: "top",
-            });
+        message: "Account created successfully!",
+        type: "success",
+        duration: 1000,
+        floating: true,
+        icon: "success",
+        position: "top",
+      });
       // Navigate to login or home screen
-      navigation.navigate('MainAppBottomTabs');
-      return (await userCredential).user;
+      navigation.navigate("MainAppBottomTabs");
     } catch (error) {
       let message = "Sign-up failed";
       if (error.code === "auth/email-already-in-use") {
@@ -74,8 +93,6 @@ const SignUpScreen = () => {
     // navigation.navigate("MainAppBottomTabs");
   };
 
-const navigation = useNavigation();
-
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
@@ -91,10 +108,7 @@ const navigation = useNavigation();
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton 
-        title="Create New Account" 
-        onPress={handleSubmit(signUp)} 
-      />
+      <AppButton title="Create New Account" onPress={handleSubmit(signUp)} />
       <AppButton
         title="Go to Sign In"
         onPress={() => navigation.navigate("SignInScreen")}
@@ -123,8 +137,8 @@ const styles = StyleSheet.create({
   },
   signInButton: {
     backgroundColor: AppColors.white,
-    borderWidth:s(1),
-    borderColor:AppColors.primary,
+    borderWidth: s(1),
+    borderColor: AppColors.primary,
     marginTop: vs(15),
   },
 });

@@ -1,21 +1,32 @@
 import { StyleSheet, View, Text, Alert } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import AppSafeView from "../../components/views/AppSafeView";
 import HomeHeader from "../../components/headers/HomeHeader";
 import ProductCard from "../../components/cards/ProductCard";
 import { FlatList } from "react-native-gesture-handler";
-import { products } from "../../data/products";
 import { s, vs } from "react-native-size-matters";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
 import { addItem } from "../../store/reducers/cartSlice";
+import { getProductsData } from "../../config/dataServices";
+
+
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const {items} = useSelector((state: RootState) => state.cartSlice);
+  // const { items } = useSelector((state: RootState) => state.cartSlice);
   const dispatch = useDispatch();
+  const [products, setProducts] = useState([]);
+
+  const fetchData = async () => {
+    const data = await getProductsData();
+    setProducts(data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <AppSafeView style={styles.container}>
