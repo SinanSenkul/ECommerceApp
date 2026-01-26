@@ -7,9 +7,11 @@ import AppButton from '../../components/buttons/AppButton';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AppColors } from '../../styles/colors';
+import { useTranslation } from 'react-i18next';
 
 const EmptyCart = () => {
     const navigation = useNavigation();
+    const { t } = useTranslation(); //localization
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons
@@ -18,9 +20,9 @@ const EmptyCart = () => {
         style={{ marginBottom: vs(5), opacity: 0.1 }}
         color={AppColors.primary}
       />
-      <AppText style={styles.title}>Your Cart is Empty</AppText>
+      <AppText style={styles.title}>{t("Your Cart is Empty")}</AppText>
       <AppButton
-        title="Start Shopping"
+        title={t("Start Shopping")}
         onPress={() => navigation.navigate("HomeScreen")}
       ></AppButton>
     </View>

@@ -19,28 +19,29 @@ import { addDoc, collection, doc } from "firebase/firestore";
 import { auth, db } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { emptyItems } from "../../store/reducers/cartSlice";
-
-const schema = yup
-  .object({
-    fullName: yup.string().required("Name is required!"),
-    emailAddress: yup
-      .string()
-      .email("This is not a valid email!")
-      .required("Email is required!")
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Invalid email format",
-      ),
-    detailedAddress: yup
-      .string()
-      .min(5, "Address too short!")
-      .required("Detailed address is required!"),
-  })
-  .required();
-
-type formData = yup.InferType<typeof schema>;
+import { useTranslation } from "react-i18next";
 
 const CheckoutScreen = () => {
+  const { t } = useTranslation();
+  const schema = yup
+    .object({
+      fullName: yup.string().required("Name is required!"),
+      emailAddress: yup
+        .string()
+        .email(t("This is not a valid email!"))
+        .required(t("Email is required!"))
+        .matches(
+          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+          t("Invalid email format"),
+        ),
+      detailedAddress: yup
+        .string()
+        .min(5, t("Address too short!"))
+        .required(t("Detailed address is required!")),
+    })
+    .required();
+  type formData = yup.InferType<typeof schema>;
+
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => state.userSlice);
@@ -76,10 +77,10 @@ const CheckoutScreen = () => {
       const ordersRef = collection(db, "orders");
       await addDoc(ordersRef, orderBody);
 
-      dispatch(emptyItems())
+      dispatch(emptyItems());
       navigation.goBack();
       showMessage({
-        message: "Orders saved successfully",
+        message: t("Orders saved successfully"),
         type: "success",
         duration: 1000,
         floating: true,
@@ -87,7 +88,7 @@ const CheckoutScreen = () => {
         position: "top",
       });
     } catch (error) {
-      console.error("Error saving order ", error);
+      console.error(t("Error saving order "), error);
     }
   };
 
@@ -97,7 +98,7 @@ const CheckoutScreen = () => {
       <HomeHeader />
       <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
         <AppButton
-          title="Back"
+          title={t("Back")}
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         />
@@ -105,24 +106,24 @@ const CheckoutScreen = () => {
           <AppTextInputController
             control={control}
             name={"fullName"}
-            placeholder="Username"
+            placeholder={t("Username")}
             value={user?.email?.split("@")[0]}
           />
           <AppTextInputController
             control={control}
             name={"emailAddress"}
-            placeholder="Email Address"
+            placeholder={t("Email Address")}
             value={user?.email}
           />
           <AppTextInputController
             control={control}
             name={"detailedAddress"}
-            placeholder="Address"
+            placeholder={t("Address")}
           />
         </View>
       </View>
       <View style={styles.buttonContainer}>
-        <AppButton title="Confirm" onPress={handleSubmit(saveOrder)} />
+        <AppButton title={t("Confirm")} onPress={handleSubmit(saveOrder)} />
       </View>
     </AppSafeView>
   );

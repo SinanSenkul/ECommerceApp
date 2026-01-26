@@ -9,10 +9,13 @@ import CartScreen from "../screens/cart/CartScreen";
 import HomeScreen from "../screens/home/HomeScreen";
 import MyOrdersScreen from "../screens/profile/MyOrdersScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
+import LanguagesScreen from "../screens/language/LanguagesScreen";
+import { useTranslation } from "react-i18next";
 
 const Stack = createStackNavigator();
 
-export default function MainAppStack(){
+export default function MainAppStack() {
+  const { t } = useTranslation();
   return (
     <AppSafeView style={styles.container}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -21,10 +24,11 @@ export default function MainAppStack(){
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CartScreen" component={CartScreen} />
         <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
+        <Stack.Screen name="LanguageScreen" component={LanguagesScreen} />
         <Stack.Screen
           name="MyOrdersScreen"
           component={MyOrdersScreen}
-          options={{ headerShown: true, title:"My Orders" }}
+          options={{ headerShown: true, headerBackTitle: t("Back"), title: t("My Orders") }}
         />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       </Stack.Navigator>

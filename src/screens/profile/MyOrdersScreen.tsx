@@ -6,6 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 import { vs } from "react-native-size-matters";
 import { orders } from "../../data/orders";
 import { getUserOrders } from "../../config/dataServices";
+import AppSafeView from "../../components/views/AppSafeView";
+import { useTranslation } from "react-i18next";
 
 const MyOrdersScreen = () => {
   const navigation = useNavigation();
@@ -13,7 +15,7 @@ const MyOrdersScreen = () => {
 
   const getOrders = async () => {
     const res = await getUserOrders();
-    console.log("*** ORDERLIST ***: ", res);
+    // console.log("*** ORDERLIST ***: ", res);
     setOrderList(res);
   };
 
@@ -21,14 +23,16 @@ const MyOrdersScreen = () => {
     getOrders();
   }, []);
 
+  const { t } = useTranslation(); //localization
+
   return (
-    <View style={styles.container}>
+    <AppSafeView style={styles.container}>
       <FlatList
         style={{ width: "100%" }}
         data={orderList}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
-          console.log(JSON.stringify(item, null, 3));
+          // console.log(JSON.stringify(item, null, 3));
 
           return (
             <OrderItem totalPrice={item.priceSum} date={item.createDate} />
@@ -37,11 +41,11 @@ const MyOrdersScreen = () => {
       />
 
       <AppButton
-        title="Back"
+        title={t("Back")}
         onPress={() => navigation.goBack()}
         style={{ marginTop: vs(10) }}
       />
-    </View>
+    </AppSafeView>
   );
 };
 

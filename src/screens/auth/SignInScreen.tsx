@@ -1,104 +1,103 @@
-import { StyleSheet, Text, Image, Alert, View } from "react-native";
-import React, { useState } from "react";
+import { StyleSheet, Image } from "react-native";
+import React from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
-import { s,vs } from "react-native-size-matters";
+import { s, vs } from "react-native-size-matters";
 import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import { AppColors } from "../../styles/colors";
 import { useNavigation } from "@react-navigation/native";
-import AppTextInputController from '../../components/inputs/AppTextInputController';
-import { useForm } from 'react-hook-form';
+import AppTextInputController from "../../components/inputs/AppTextInputController";
+import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
 import { emptyItems } from "../../store/reducers/cartSlice";
+import { useTranslation } from "react-i18next";
+import { AppFonts } from "../../styles/fonts";
+import { t } from "i18next";
 
-
+//validation
 const schema = yup
   .object({
-    userName: yup.string().required("Username is required!"),
-    password: yup.string().required("Password is required!"),
-  }).required();
+    userName: yup.string().required(t("Username is required!")),
+    password: yup.string().required(t("Password is required!")),
+  })
+  .required();
+type formData = yup.InferType<typeof schema>;
 
-  type formData = yup.InferType<typeof schema>;
-
+//screen
 const SignInScreen = () => {
+  const navigation = useNavigation(); //navigation
+  const dispatch = useDispatch(); //redux
+  const { t } = useTranslation(); //localization
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  const navigation = useNavigation();
-  const { userData } = useSelector((state: RootState) => state.userSlice);
-  const {items} = useSelector((state: RootState) => state.cartSlice);
-  const dispatch = useDispatch();
-
+  //validation
   const { control, handleSubmit } = useForm({
-      resolver: yupResolver(schema)
-    });
+    resolver: yupResolver(schema),
+  });
 
-    const signIn = async (data: formData)=>{
-      try {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          data.userName,
-          data.password
-        );
-        
-        const userDataObj ={
-          uid: userCredential.user.uid,
-        }
-        
-        dispatch(emptyItems());
-        dispatch(setUserData(userDataObj)); // we get the user data from db rather than reducer currently
+  const signIn = async (data: formData) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.userName,
+        data.password,
+      );
 
-        navigation.navigate("MainAppBottomTabs");
+      const userDataObj = {
+        uid: userCredential.user.uid,
+      };
 
-      } catch (error) {
-        let errorMessage = "";
-        if (error.code === "auth/user-not-found") {
-          errorMessage = "User not found";
-        } else if (error.code === "auth/invalid-credential") {
-          errorMessage = "Username or password is wrong";
-        } else {
-          errorMessage = `Error: ${error}`;
-          console.log("error code: ", error);
-        }
-        showMessage({
-          message: errorMessage,
-          type: "danger",
-          duration: 1000,
-          floating: true,
-          icon: "danger",
-          position: "top",
-        });
+      dispatch(emptyItems());
+      dispatch(setUserData(userDataObj)); // we get the user data from db rather than reducer currently
+
+      navigation.navigate("MainAppBottomTabs");
+    } catch (error) {
+      let errorMessage = "";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "User not found";
+      } else if (error.code === "auth/invalid-credential") {
+        errorMessage = "Username or password is wrong";
+      } else {
+        errorMessage = `Error: ${error}`;
+        console.log("error code: ", error);
       }
+      showMessage({
+        message: errorMessage,
+        type: "danger",
+        duration: 1000,
+        floating: true,
+        icon: "danger",
+        position: "top",
+      });
     }
+  };
 
-// user will be able to type either his username or email here
+  // user will be able to type either his username or email here
   return (
     <AppSafeView style={styles.container}>
       <Image source={images.appLogo} style={styles.logo} />
       <AppTextInputController
         control={control}
         name={"userName"}
-        placeholder="Username or Email"
+        placeholder={t("Email")}
       />
       <AppTextInputController
         control={control}
         name={"password"}
-        placeholder="Password"
+        placeholder={t("Password")}
         secureTextEntry
       />
-      <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title="Login" onPress={handleSubmit(signIn)} />
+      <AppText style={styles.appName}>{t("Welcome to Smart E-Commerce")}</AppText>
+      <AppButton title={t("Login")} onPress={handleSubmit(signIn)} />
       <AppButton
-        title="Sign Up"
+        title={t("Sign Up")}
         onPress={() => navigation.navigate("SignUpScreen")}
         style={styles.registerButton}
         textColor={AppColors.primary}
@@ -120,17 +119,17 @@ const styles = StyleSheet.create({
     marginBottom: vs(30),
   },
   appName: {
+    fontFamily: AppFonts.Bold,
     fontSize: s(16),
-    marginBottom: vs(15),
+    marginVertical: vs(15),
   },
   registerButton: {
     backgroundColor: AppColors.white,
-    borderWidth:s(1),
-    borderColor:AppColors.primary,
+    borderWidth: s(1),
+    borderColor: AppColors.primary,
     marginTop: vs(15),
   },
 });
-
 
 // const userCredentialUser = {
 //   _redirectEventId: undefined,

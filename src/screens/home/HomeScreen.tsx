@@ -10,8 +10,7 @@ import { showMessage } from "react-native-flash-message";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/reducers/cartSlice";
 import { getProductsData } from "../../config/dataServices";
-
-
+import { useTranslation } from "react-i18next";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -27,6 +26,8 @@ const HomeScreen = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const { t } = useTranslation();
 
   return (
     <AppSafeView style={styles.container}>
@@ -48,7 +49,7 @@ const HomeScreen = () => {
             qty={item.qty}
             onAddToCartPress={() => {
               showMessage({
-                message: "Added to Card",
+                message: t("Added to Card"),
                 type: "success",
                 duration: 1000,
                 floating: true,
@@ -65,9 +66,7 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    
-  },
+  container: {},
   listContainer: {
     justifyContent: "center",
     alignItems: "center",

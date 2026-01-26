@@ -1,23 +1,37 @@
 import { StyleSheet, Text, View } from "react-native";
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { s, vs } from "react-native-size-matters";
 import { AppColors } from "../../styles/colors";
 import AppText from "../texts/AppText";
 import { AppFonts } from "../../styles/fonts";
 import { AppStyles } from "../../styles/sharedStyles";
+import { formatFirestoreDate } from "../../helpers/dateFormatter";
+import { useTranslation } from "react-i18next";
 
 interface IOrderItem {
   totalPrice?: number;
-  date?: Date;
+  date?: Date | string;
 }
 
 const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
+  const [dateStringified, setDateStringified] = useState(date);
+
+  useEffect(() => {
+    if (typeof date !== "string") {
+      let newDate = formatFirestoreDate(date);
+      setDateStringified(newDate);
+    }
+  }, []);
+
+  const { t } = useTranslation(); //localization
+
   return (
     <View style={[styles.container, AppStyles.shadow]}>
-      <AppText style={styles.title}>ORDER DETAILS:</AppText>
+      <AppText style={styles.title}>{t("ORDER DETAILS:")}</AppText>
       <View style={styles.separator}></View>
-      <AppText style={styles.text}>Total Price: {totalPrice} ₺</AppText>
-      <AppText style={styles.text}>Date: {date}</AppText>
+      <AppText style={styles.text}>{t("Total Price:")} {totalPrice} ₺</AppText>
+      {/* <AppText style={styles.text}>Date: {date?.toString()}</AppText> */}
+      <AppText style={styles.text}>{t("Date:")} {dateStringified?.toString()}</AppText>
     </View>
   );
 };

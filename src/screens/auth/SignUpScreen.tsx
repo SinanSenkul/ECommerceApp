@@ -17,21 +17,23 @@ import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const schema = yup
   .object({
     emailAddress: yup
       .string()
-      .email("This is not a valid email!")
-      .required("Email is required!")
+      .email(t("This is not a valid email!"))
+      .required(t("Email is required!"))
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Invalid email format"
+        t("Invalid email format")
       ),
     password: yup
       .string()
-      .required("Password is required!")
-      .min(6, "Password must be at least 6 characters long"),
+      .required(t("Password is required!"))
+      .min(6, t("Password must be at least 6 characters long")),
   })
   .required();
 
@@ -40,6 +42,7 @@ type formData = yup.InferType<typeof schema>;
 const SignUpScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const { t } = useTranslation(); //localization tool
 
   const { control, handleSubmit } = useForm({
     resolver: yupResolver(schema),
@@ -47,7 +50,7 @@ const SignUpScreen = () => {
 
   const signUp = async (data: formData) => {
     if (!data.emailAddress || !data.password) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert(t("Error, please fill in all fields"));
       return;
     }
     try {
@@ -63,7 +66,7 @@ const SignUpScreen = () => {
 
       dispatch(setUserData(userDataObj));
       showMessage({
-        message: "Account created successfully!",
+        message: t("Account created successfully!"),
         type: "success",
         duration: 1000,
         floating: true,
@@ -73,13 +76,13 @@ const SignUpScreen = () => {
       // Navigate to login or home screen
       navigation.navigate("MainAppBottomTabs");
     } catch (error) {
-      let message = "Sign-up failed";
+      let message = t("Sign-up failed");
       if (error.code === "auth/email-already-in-use") {
-        message = "Email is already in use";
+        message = t("Email is already in use");
       } else if (error.code === "auth/weak-password") {
-        message = "Password is too weak (min 6 characters)";
+        message = t("Password is too weak (min 6 characters)");
       } else if (error.code === "auth/invalid-email") {
-        message = "Invalid email address";
+        message = t("Invalid email address");
       }
       showMessage({
         message: message,
@@ -99,18 +102,18 @@ const SignUpScreen = () => {
       <AppTextInputController
         control={control}
         name={"emailAddress"}
-        placeholder="Email"
+        placeholder={t("Email")}
       />
       <AppTextInputController
         control={control}
         name={"password"}
-        placeholder="Password"
+        placeholder={t("Password")}
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title="Create New Account" onPress={handleSubmit(signUp)} />
+      <AppButton title={t("Create New Account")} onPress={handleSubmit(signUp)} />
       <AppButton
-        title="Go to Sign In"
+        title={t("Go to Sign In")}
         onPress={() => navigation.navigate("SignInScreen")}
         style={styles.signInButton}
         textColor={AppColors.primary}

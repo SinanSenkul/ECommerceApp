@@ -6,6 +6,7 @@ import { AppColors } from '../../styles/colors';
 import { AppFonts } from '../../styles/fonts';
 import { AntDesign } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface ICartItem {
   imageURL?: string;
@@ -30,6 +31,8 @@ const CartItem: FC<ICartItem> = ({
   const handleImageError=()=>{
     setImgSource("https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg")
   }
+
+  const { t } = useTranslation(); //localization
   return (
     <Pressable style={styles.container}>
       {/* image container */}
@@ -54,7 +57,7 @@ const CartItem: FC<ICartItem> = ({
       <View style={styles.deleteContainer}>
         <Pressable style={styles.deletePressable} onPress={onDeletePress}>
           <AntDesign name="delete" size={s(14)} color={AppColors.red} />
-          <AppText style={styles.deleteText}>Delete</AppText>
+          <AppText style={styles.deleteText}>{t("Delete")}</AppText>
         </Pressable>
       </View>
     </Pressable>

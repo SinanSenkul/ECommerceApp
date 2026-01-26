@@ -11,6 +11,9 @@ import AppButton from "../../components/buttons/AppButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { auth } from "../../config/firebase";
+import { useTranslation } from "react-i18next";
+// import LanguageBottomSheet from "../../components/languages/LanguageBottomSheet";
+// import { SheetManager } from "react-native-actions-sheet";
 
 interface IProfileScreen {
   username?: string;
@@ -21,6 +24,10 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const { userData } = useSelector((state: RootState) => state.userSlice);
 
   const user = auth.currentUser;
+  const userName = user?.email?.split("@")[0];
+  console.log("userName: ", userName);
+  
+  const { t } = useTranslation(); //localization
 
   return (
     <AppSafeView>
@@ -29,21 +36,25 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         variant="bold"
         style={{ fontSize: s(18), marginTop: vs(10), marginLeft: s(5) }}
       >
-        Hello, {user?.email?.split("@")[0]}
+        {t("common.messages.profileGreeting", { userName: userName })}
       </AppText>
       <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
         <ProfileSectionButton
-          title="My Orders"
+          title={t("My Orders")}
           onPress={() => navigation.navigate("MyOrdersScreen")}
         />
-        <ProfileSectionButton title="Language" />
         <ProfileSectionButton
-          title="Log Out"
+          title={t("Language")}
+          onPress={() => navigation.navigate("LanguageScreen")}
+        />
+
+        <ProfileSectionButton
+          title={t("Log Out")}
           onPress={() => navigation.navigate("AuthStack")}
         />
       </View>
       <AppButton
-        title="Back"
+        title={t("Back")}
         style={{ marginTop: vs(5) }}
         onPress={() => navigation.goBack()}
       />
