@@ -11,12 +11,11 @@ const LANGUAGES = {
 };
 
 // const getDeviceLanguage = () => {
-  
+
 // };
 
 i18n.use(initReactI18next).init({
   resources: LANGUAGES,
-  // lng: getDeviceLanguage(),
   fallbackLng: "en",
   dafaultNS: "translation", //NS: name space
   ns: ["translation"],

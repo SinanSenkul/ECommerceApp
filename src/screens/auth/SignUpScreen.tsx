@@ -19,6 +19,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
 import { t } from "i18next";
 import { useTranslation } from "react-i18next";
+import { LoggedIn } from "../../helpers/loggedIn";
 
 const schema = yup
   .object({
@@ -28,7 +29,7 @@ const schema = yup
       .required(t("Email is required!"))
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        t("Invalid email format")
+        t("Invalid email format"),
       ),
     password: yup
       .string()
@@ -58,12 +59,12 @@ const SignUpScreen = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.emailAddress.trim(),
-        data.password
+        data.password,
       );
       const userDataObj = {
         uid: userCredential.user.uid,
       };
-
+      LoggedIn();
       dispatch(setUserData(userDataObj));
       showMessage({
         message: t("Account created successfully!"),
@@ -111,7 +112,10 @@ const SignUpScreen = () => {
         secureTextEntry
       />
       <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton title={t("Create New Account")} onPress={handleSubmit(signUp)} />
+      <AppButton
+        title={t("Create New Account")}
+        onPress={handleSubmit(signUp)}
+      />
       <AppButton
         title={t("Go to Sign In")}
         onPress={() => navigation.navigate("SignInScreen")}

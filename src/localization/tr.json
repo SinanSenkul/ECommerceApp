@@ -36,7 +36,7 @@
   "Address": "Adres",
   "Username": "Kullanıcı Adı",
   "Email Address": "E-posta Adresi",
-  "Confirm": "Onayla",
+  "Done": "Tamam",
   "Orders saved successfully": "Siparişler başarıyla kaydedildi",
   "Address too short!": "Adres çok kısa!",
   "Detailed address is required!": "Ayrıntılı adres zorunludur!",
@@ -48,5 +48,9 @@
   "Total Price:": "Toplam Tutar:",
   "Date:": "Tarih:",
   "Change Language": "Dil Değiştir",
-  "Added to Card": "Sepete Eklendi"
+  "Added to Card": "Sepete Eklendi",
+  "auth/user-not-found": "auth/kullanıcı bulunamadı",
+  "User not found": "Kullanıcı bulunamadı",
+  "auth/invalid-credential": "auth/geçersiz kimlik bilgisi",
+  "Username or password is wrong": "Kullanıcı adı veya şifre yanlış"
 }

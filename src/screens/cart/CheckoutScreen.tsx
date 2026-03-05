@@ -1,5 +1,5 @@
 import { Alert, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { AppStyles, sharedStyles } from "../../styles/sharedStyles";
 import { AppColors } from "../../styles/colors";
@@ -20,9 +20,25 @@ import { auth, db } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CheckoutScreen = () => {
   const { t } = useTranslation();
+  const [userId, setuserId] = useState("");
+
+  const getUserId = async () => {
+    let userDataStringified = await AsyncStorage.getItem("user-data");
+    if (userDataStringified) {
+      let userDataObj = JSON.parse(userDataStringified);
+      setuserId(userDataObj.uid);
+    }
+  };
+
+  useEffect(() => {
+    getUserId();
+  }, []);
+
+  
   const schema = yup
     .object({
       fullName: yup.string().required("Name is required!"),
@@ -44,7 +60,7 @@ const CheckoutScreen = () => {
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const { userData } = useSelector((state: RootState) => state.userSlice);
+
   const { items } = useSelector((state: RootState) => state.cartSlice);
   const user = auth.currentUser;
 
@@ -71,7 +87,7 @@ const CheckoutScreen = () => {
         priceSum,
         createDate: formatToDDMMYYYY(new Date()),
       };
-      const userOrderRef = collection(doc(db, "users", userData.uid), "orders");
+      const userOrderRef = collection(doc(db, "users", userId), "orders");
       await addDoc(userOrderRef, orderBody);
 
       const ordersRef = collection(db, "orders");

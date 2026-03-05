@@ -11,6 +11,7 @@ import MyOrdersScreen from "../screens/profile/MyOrdersScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import LanguagesScreen from "../screens/language/LanguagesScreen";
 import { useTranslation } from "react-i18next";
+import LaunchScreen from "../screens/auth/LaunchScreen";
 
 const Stack = createStackNavigator();
 
@@ -18,7 +19,13 @@ export default function MainAppStack() {
   const { t } = useTranslation();
   return (
     <AppSafeView style={styles.container}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        // initialRouteName={userData ?  "MainAppBottomTabs" : "AuthStack"} --> no LaunchScreen option
+      >
+        <Stack.Screen name="LaunchStack" component={LaunchScreen} />
         <Stack.Screen name="AuthStack" component={AuthStack} />
         <Stack.Screen name="MainAppBottomTabs" component={MainAppBottomTabs} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
@@ -28,7 +35,11 @@ export default function MainAppStack() {
         <Stack.Screen
           name="MyOrdersScreen"
           component={MyOrdersScreen}
-          options={{ headerShown: true, headerBackTitle: t("Back"), title: t("My Orders") }}
+          options={{
+            headerShown: true,
+            headerBackTitle: t("Back"),
+            title: t("My Orders"),
+          }}
         />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       </Stack.Navigator>

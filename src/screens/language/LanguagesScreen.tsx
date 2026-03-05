@@ -12,18 +12,20 @@ import AppText from "../../components/texts/AppText";
 import Radio from "../../components/inputs/Radio";
 import AppButton from "../../components/buttons/AppButton";
 import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LanguageBottomSheet = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const { languageCode, languages } = useSelector(
+  const { languages } = useSelector(
     (state: RootState) => state.languageSlice,
   );
 
   const [languageChanged, setLanguageChanged] = useState(false);
-  const [lngCode, setLngCode] = useState(languageCode);
+  // const [lngCode, setLngCode] = useState(languageCode);
   const [lngTitle, setLngTitle] = useState("");
+  const { t, i18n } = useTranslation();
 
   const handlePress = (title) => {
     let code = "";
@@ -34,12 +36,13 @@ const LanguageBottomSheet = () => {
     } else {
       code = "es";
     }
-    console.log("the code is: ", code);
     setLngTitle(title);
     setLanguageChanged(true);
-    setLngCode(code);
-    dispatch(setLanguageCode(code));
+    dispatch(setLanguageCode(code)); //--> necessary?
+    storeLangCode(code); //locally
   };
+
+  console;
 
   const handleConfirm = () => {
     navigation.goBack();
@@ -56,7 +59,13 @@ const LanguageBottomSheet = () => {
       });
   };
 
-  const { t } = useTranslation();
+  const storeLangCode = async (code) => {
+    try {
+      await AsyncStorage.setItem("lang-code", code);
+    } catch (e) {
+      console.error("saving error: ", e);
+    }
+  };
 
   return (
     <AppSafeView>
@@ -74,13 +83,13 @@ const LanguageBottomSheet = () => {
             <Radio
               key={lang.title}
               title={lang.title}
-              selected={lang.selected}
+              selected={lang.code === i18n.language}
               onPress={() => handlePress(lang.title)}
             />
           ))}
         </View>
         <AppButton
-          title={t("Confirm")}
+          title={t("Done")}
           onPress={() => {
             handleConfirm();
           }}

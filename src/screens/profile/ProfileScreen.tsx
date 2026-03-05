@@ -8,12 +8,13 @@ import AppText from "../../components/texts/AppText";
 import { s, vs } from "react-native-size-matters";
 import { useNavigation } from "@react-navigation/native";
 import AppButton from "../../components/buttons/AppButton";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { auth } from "../../config/firebase";
 import { useTranslation } from "react-i18next";
-// import LanguageBottomSheet from "../../components/languages/LanguageBottomSheet";
-// import { SheetManager } from "react-native-actions-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { deleteUserData } from "../../store/reducers/userSlice";
+import { signOut, getAuth } from "firebase/auth";
 
 interface IProfileScreen {
   username?: string;
@@ -22,12 +23,21 @@ interface IProfileScreen {
 const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation();
   const { userData } = useSelector((state: RootState) => state.userSlice);
-
+  const dispatch = useDispatch(); //redux
   const user = auth.currentUser;
+  const authInstance = getAuth();
   const userName = user?.email?.split("@")[0];
-  console.log("userName: ", userName);
-  
+
   const { t } = useTranslation(); //localization
+
+  const LoggedOut = async () => {
+    try {
+      dispatch(deleteUserData());
+      await signOut(authInstance);
+    } catch (e) {
+      console.error("logout error: ", e);
+    }
+  };
 
   return (
     <AppSafeView>
@@ -50,7 +60,10 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
 
         <ProfileSectionButton
           title={t("Log Out")}
-          onPress={() => navigation.navigate("AuthStack")}
+          onPress={() => {
+            LoggedOut();
+            navigation.navigate("AuthStack");
+          }}
         />
       </View>
       <AppButton

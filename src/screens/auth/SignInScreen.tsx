@@ -21,6 +21,7 @@ import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
 import { AppFonts } from "../../styles/fonts";
 import { t } from "i18next";
+import { LoggedIn } from "../../helpers/loggedIn";
 
 //validation
 const schema = yup
@@ -49,24 +50,22 @@ const SignInScreen = () => {
         data.userName,
         data.password,
       );
-
       const userDataObj = {
         uid: userCredential.user.uid,
       };
-
       dispatch(emptyItems());
       dispatch(setUserData(userDataObj)); // we get the user data from db rather than reducer currently
-
+      LoggedIn(); //local update
       navigation.navigate("MainAppBottomTabs");
     } catch (error) {
       let errorMessage = "";
-      if (error.code === "auth/user-not-found") {
-        errorMessage = "User not found";
-      } else if (error.code === "auth/invalid-credential") {
-        errorMessage = "Username or password is wrong";
+      if (error.code === t("auth/user-not-found")) {
+        errorMessage = t("User not found");
+      } else if (error.code === t("auth/invalid-credential")) {
+        errorMessage = t("Username or password is wrong");
       } else {
         errorMessage = `Error: ${error}`;
-        console.log("error code: ", error);
+        console.log(t("error code: "), error);
       }
       showMessage({
         message: errorMessage,
@@ -94,7 +93,9 @@ const SignInScreen = () => {
         placeholder={t("Password")}
         secureTextEntry
       />
-      <AppText style={styles.appName}>{t("Welcome to Smart E-Commerce")}</AppText>
+      <AppText style={styles.appName}>
+        {t("Welcome to Smart E-Commerce")}
+      </AppText>
       <AppButton title={t("Login")} onPress={handleSubmit(signIn)} />
       <AppButton
         title={t("Sign Up")}
@@ -128,6 +129,12 @@ const styles = StyleSheet.create({
     borderWidth: s(1),
     borderColor: AppColors.primary,
     marginTop: vs(15),
+  },
+  userLoggedIn: {
+    flex: 1,
+    backgroundColor: "black",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

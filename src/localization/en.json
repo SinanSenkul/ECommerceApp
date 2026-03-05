@@ -36,7 +36,7 @@
   "Address": "Address",
   "Username": "Username",
   "Email Address": "Email Address",
-  "Confirm": "Confirm",
+  "Done": "Done",
   "Orders saved successfully": "Orders saved successfully",
   "Address too short!": "Address too short!",
   "Detailed address is required!": "Detailed address is required!",
@@ -48,5 +48,9 @@
   "Total Price:": "Total Price:",
   "Date:": "Date:",
   "Change Language": "Change Language",
-  "Added to Card": "Added to Card"
+  "Added to Card": "Added to Card",
+  "auth/user-not-found": "auth/user-not-found",
+  "User not found": "User not found",
+  "auth/invalid-credential":"auth/invalid-credential",
+  "Username or password is wrong": "Username or password is wrong"
 }

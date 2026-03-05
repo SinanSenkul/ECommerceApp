@@ -36,7 +36,7 @@
   "Address": "Dirección",
   "Username": "Nombre de usuario",
   "Email Address": "Correo electrónico",
-  "Confirm": "Confirmar",
+  "Done": "Hecho",
   "Orders saved successfully": "Pedidos guardados exitosamente",
   "Address too short!": "¡La dirección es demasiado corta!",
   "Detailed address is required!": "¡Se requiere una dirección detallada!",
@@ -48,5 +48,9 @@
   "Total Price:": "Precio total:",
   "Date:": "Fecha:",
   "Change Language": "Cambiar idioma",
-  "Added to Card": "Añadido a la Tarjeta"
+  "Added to Card": "Añadido a la Tarjeta",
+  "auth/user-not-found": "auth/usuario no encontrado",
+  "User not found": "Usuario no encontrado",
+  "auth/invalid-credential": "auth/invalid-credential",
+  "Username or password is wrong": "Usuario o contraseña incorrectos"
 }
