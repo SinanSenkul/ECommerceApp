@@ -10,6 +10,7 @@ import i18n from "./src/localization/i18n";
 import { I18nextProvider } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PersistGate } from "redux-persist/integration/react";
+import { getLocales } from "expo-localization";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -27,13 +28,24 @@ export default function App() {
         await i18n.changeLanguage("en"); // Or your default
       }
     } catch (error) {
-      console.error("Error loading language:", error);
+      console.error("Error loading language in localstorage:", error);
+      await i18n.changeLanguage("en"); // Fallback on error
+    }
+  }
+
+  async function getDeviceLanguage() {
+    try {
+      const deviceLang = getLocales()[0]?.languageCode ?? "en";
+      await i18n.changeLanguage(deviceLang);
+    } catch (e) {
+      console.error("Error loading device language:", e);
       await i18n.changeLanguage("en"); // Fallback on error
     }
   }
 
   useEffect(() => {
-    loadAndSetLanguage();
+    //loadAndSetLanguage();
+    getDeviceLanguage();
   }, []);
 
   if (!fontsLoaded) {

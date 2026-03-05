@@ -12,9 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { auth } from "../../config/firebase";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteUserData } from "../../store/reducers/userSlice";
 import { signOut, getAuth } from "firebase/auth";
+import * as Linking from "expo-linking";
+import { Platform, Alert } from "react-native";
 
 interface IProfileScreen {
   username?: string;
@@ -39,6 +40,22 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     }
   };
 
+  const openDeviceLanguageSettings = async () => {
+    if (Platform.OS === "ios") {
+      try {
+        // This is the current (2026) working deep link to Language & Region
+        await Linking.openURL("App-Prefs:General&path=INTERNATIONAL");
+      } catch (error) {
+        console.error("Could not open Language & Region settings:", error);
+        // Fallback: open the main Settings app
+        await Linking.openSettings();
+      }
+    } else {
+      Alert.alert("Not available", "This feature currently works only on iPhone/iPad.");
+      return;
+    }
+  };
+
   return (
     <AppSafeView>
       <HomeHeader />
@@ -55,7 +72,10 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         />
         <ProfileSectionButton
           title={t("Language")}
-          onPress={() => navigation.navigate("LanguageScreen")}
+          // onPress={() => navigation.navigate("LanguageScreen")}
+          onPress={()=>{
+            openDeviceLanguageSettings()
+          }}
         />
 
         <ProfileSectionButton

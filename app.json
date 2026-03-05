@@ -36,7 +36,8 @@
           "imageWidth": 200
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-localization"
     ],
     "extra": {
       "eas": {
