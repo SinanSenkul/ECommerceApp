@@ -11,10 +11,7 @@ By using Smart E-Commerce, you agree to the practices described in this policy.
 
 We may collect the following information:
 
-- **Account Information**: Name, email address, password, phone number, and shipping address when you create an account or place an order.
-- **Purchase Information**: Details of the electronics you browse or buy (phones, iPads, laptops, computers, etc.), order history, and payment method (we do not store your full payment card details — payments are handled securely by Apple Pay or our payment partners).
-- **Usage Data**: How you interact with the app (pages viewed, searches, time spent) to improve the user experience.
-- **Device Information**: Device type, operating system version, and unique device identifiers for analytics and troubleshooting.
+- **Account Information**: Email address and password when you create an account or place an order.
 
 We do not collect sensitive information such as location (unless you voluntarily provide a delivery address), biometric data, or health data.
 
@@ -24,8 +21,6 @@ We use your information to:
 - Provide and improve our super-simple shopping experience
 - Process your orders and deliver products
 - Send order confirmations and important updates
-- Personalize product recommendations
-- Analyze app usage to make the interface even easier to use
 - Prevent fraud and ensure security
 
 ## 3. Sharing Your Information
