@@ -1,6 +1,4 @@
-# Final Project
-
-Final project of Patika+ Back-End Bootcamp.
+# Smart E Commerce App
 
 ## Description
 
