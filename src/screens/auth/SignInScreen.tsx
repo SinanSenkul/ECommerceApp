@@ -1,4 +1,4 @@
-import { StyleSheet, Image } from "react-native";
+import { StyleSheet, Image, Text } from "react-native";
 import React from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
@@ -100,6 +100,12 @@ const SignInScreen = () => {
       <AppButton
         title={t("Sign Up")}
         onPress={() => navigation.navigate("SignUpScreen")}
+        style={styles.registerButton}
+        textColor={AppColors.primary}
+      />
+      <AppButton
+        title={t("Guest Entrance")}
+        onPress={() => navigation.navigate("MainAppBottomTabs")}
         style={styles.registerButton}
         textColor={AppColors.primary}
       />

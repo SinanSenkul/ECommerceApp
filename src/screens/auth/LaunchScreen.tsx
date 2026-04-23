@@ -16,7 +16,7 @@ const LaunchScreen = () => {
 
   const dispatch = useDispatch();
 
-  const isLoggedInLocally = async () => {
+  const isLoggedInLocally = async () => { // this func is just for educational purposes. in real-time app uses firebase for this purpose
     let status = await AsyncStorage.getItem("logged-in");
     if (status === "true") {
       setUserLoggedIn(true);

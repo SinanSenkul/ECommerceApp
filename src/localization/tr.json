@@ -52,5 +52,7 @@
   "auth/user-not-found": "auth/kullanıcı bulunamadı",
   "User not found": "Kullanıcı bulunamadı",
   "auth/invalid-credential": "auth/geçersiz kimlik bilgisi",
-  "Username or password is wrong": "Kullanıcı adı veya şifre yanlış"
+  "Username or password is wrong": "Kullanıcı adı veya şifre yanlış",
+  "Guest Entrance": "Misafir Girişi",
+  "Welcome Guest!": "Hoşgeldiniz!"
 }

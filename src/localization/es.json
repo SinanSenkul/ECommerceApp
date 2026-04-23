@@ -52,5 +52,7 @@
   "auth/user-not-found": "auth/usuario no encontrado",
   "User not found": "Usuario no encontrado",
   "auth/invalid-credential": "auth/invalid-credential",
-  "Username or password is wrong": "Usuario o contraseña incorrectos"
+  "Username or password is wrong": "Usuario o contraseña incorrectos",
+  "Guest Entrance": "Entrar sin Suscribirse",
+  "Welcome Guest!": "Bienvenidos!"
 }

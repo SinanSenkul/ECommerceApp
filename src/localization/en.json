@@ -52,5 +52,7 @@
   "auth/user-not-found": "auth/user-not-found",
   "User not found": "User not found",
   "auth/invalid-credential":"auth/invalid-credential",
-  "Username or password is wrong": "Username or password is wrong"
+  "Username or password is wrong": "Username or password is wrong",
+  "Guest Entrance": "Guest Entrance",
+  "Welcome Guest!": "Welcome Guest!"
 }

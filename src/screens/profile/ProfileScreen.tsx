@@ -16,6 +16,8 @@ import { deleteUserData } from "../../store/reducers/userSlice";
 import { signOut, getAuth } from "firebase/auth";
 import * as Linking from "expo-linking";
 import { Platform, Alert } from "react-native";
+import ProfileScreenUnsub from "./ProfileScreenUnsub";
+import { emptyItems } from "../../store/reducers/cartSlice";
 
 interface IProfileScreen {
   username?: string;
@@ -34,6 +36,7 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const LoggedOut = async () => {
     try {
       dispatch(deleteUserData());
+      dispatch(emptyItems())
       await signOut(authInstance);
     } catch (e) {
       console.error("logout error: ", e);
@@ -51,47 +54,57 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         await Linking.openSettings();
       }
     } else {
-      Alert.alert("Not available", "This feature currently works only on iPhone/iPad.");
+      Alert.alert(
+        "Not available",
+        "This feature currently works only on iPhone/iPad.",
+      );
       return;
     }
   };
 
-  return (
-    <AppSafeView>
-      <HomeHeader />
-      <AppText
-        variant="bold"
-        style={{ fontSize: s(18), marginTop: vs(10), marginLeft: s(5) }}
-      >
-        {t("common.messages.profileGreeting", { userName: userName })}
-      </AppText>
-      <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
-        <ProfileSectionButton
-          title={t("My Orders")}
-          onPress={() => navigation.navigate("MyOrdersScreen")}
-        />
-        <ProfileSectionButton
-          title={t("Language")}
-          // onPress={() => navigation.navigate("LanguageScreen")}
-          onPress={()=>{
-            openDeviceLanguageSettings()
-          }}
-        />
+  if (!user) {
+    return <ProfileScreenUnsub />;
+  }
 
-        <ProfileSectionButton
-          title={t("Log Out")}
-          onPress={() => {
-            LoggedOut();
-            navigation.navigate("AuthStack");
-          }}
+  return (
+    <>
+      <AppSafeView>
+        <HomeHeader />
+        <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
+          <ProfileSectionButton
+            title={t("My Orders")}
+            onPress={() => navigation.navigate("MyOrdersScreen")}
+          />
+          <ProfileSectionButton
+            title={t("Language")}
+            // onPress={() => navigation.navigate("LanguageScreen")}
+            onPress={() => {
+              openDeviceLanguageSettings();
+            }}
+          />
+
+          <ProfileSectionButton
+            title={t("Log Out")}
+            onPress={() => {
+              LoggedOut();
+              navigation.navigate("AuthStack");
+            }}
+          />
+
+          <ProfileSectionButton
+            title={t("Deactivate Account")}
+            onPress={() => {
+              navigation.navigate("DeleteUserScreen");
+            }}
+          />
+        </View>
+        <AppButton
+          title={t("Back")}
+          style={{ marginTop: vs(5) }}
+          onPress={() => navigation.goBack()}
         />
-      </View>
-      <AppButton
-        title={t("Back")}
-        style={{ marginTop: vs(5) }}
-        onPress={() => navigation.goBack()}
-      />
-    </AppSafeView>
+      </AppSafeView>
+    </>
   );
 };
 

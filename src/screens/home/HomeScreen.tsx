@@ -11,12 +11,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/reducers/cartSlice";
 import { getProductsData } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
+import { getAuth } from "firebase/auth";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   // const { items } = useSelector((state: RootState) => state.cartSlice);
   const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   const fetchData = async () => {
     const data = await getProductsData();
@@ -28,6 +31,27 @@ const HomeScreen = () => {
   }, []);
 
   const { t } = useTranslation();
+
+  const onAddtoCartHandler = (item) => {
+    if (user) {
+      showMessage({
+        message: t("Added to Card"),
+        type: "success",
+        duration: 1000,
+        floating: true,
+        icon: "success",
+      });
+      dispatch(addItem(item));
+    }else{
+      showMessage({
+        message: t("You must sign up to add it to your card"),
+        type: "none",
+        duration: 2000,
+        floating: true,
+        icon: "success",
+      });
+    }
+  };
 
   return (
     <AppSafeView style={styles.container}>
@@ -47,16 +71,17 @@ const HomeScreen = () => {
             title={item.title}
             imageURL={item.imageURL}
             qty={item.qty}
-            onAddToCartPress={() => {
-              showMessage({
-                message: t("Added to Card"),
-                type: "success",
-                duration: 1000,
-                floating: true,
-                icon: "success",
-              });
-              dispatch(addItem(item));
-            }}
+            // onAddToCartPress={() => {
+            //   showMessage({
+            //     message: t("Added to Card"),
+            //     type: "success",
+            //     duration: 1000,
+            //     floating: true,
+            //     icon: "success",
+            //   });
+            //   dispatch(addItem(item));
+            // }}
+            onAddToCartPress={()=>onAddtoCartHandler(item)}
           />
         )}
         keyExtractor={(item) => item.id.toString()}

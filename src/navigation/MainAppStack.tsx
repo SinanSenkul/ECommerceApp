@@ -12,6 +12,10 @@ import ProfileScreen from "../screens/profile/ProfileScreen";
 import LanguagesScreen from "../screens/language/LanguagesScreen";
 import { useTranslation } from "react-i18next";
 import LaunchScreen from "../screens/auth/LaunchScreen";
+import DeleteUser from "../screens/auth/DeleteUserScreen";
+import DeleteUserScreen from "../screens/auth/DeleteUserScreen";
+import SignUpScreen from "../screens/auth/SignUpScreen";
+import SignInScreen from "../screens/auth/SignInScreen";
 
 const Stack = createStackNavigator();
 
@@ -32,6 +36,7 @@ export default function MainAppStack() {
         <Stack.Screen name="CartScreen" component={CartScreen} />
         <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
         <Stack.Screen name="LanguageScreen" component={LanguagesScreen} />
+        <Stack.Screen name="DeleteUserScreen" component={DeleteUserScreen} />
         <Stack.Screen
           name="MyOrdersScreen"
           component={MyOrdersScreen}
