@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Image, Alert, Modal } from "react-native";
+import { StyleSheet, Text, Image, Alert, Modal, View } from "react-native";
 import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
@@ -12,13 +12,8 @@ import AppTextInputController from "../../components/inputs/AppTextInputControll
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { auth } from "../../config/firebase";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  deleteUser,
-  signOut,
-} from "firebase/auth";
+// import { auth } from "../../config/firebase";
+import { getAuth, deleteUser, signOut } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch } from "react-redux";
 import { deleteUserData, setUserData } from "../../store/reducers/userSlice";
@@ -40,13 +35,17 @@ const DeleteUserScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const { t } = useTranslation(); //localization tool
-
   const auth = getAuth();
   const user = auth.currentUser;
+  const [modalVisible, setModalVisible] = useState(false);
 
   const { control, handleSubmit } = useForm({
     resolver: yupResolver(schema),
   });
+
+  const handleDeletePress = () => {
+    setModalVisible(true);
+  };
 
   const deactivateUser = async (data: formData) => {
     if (!data.password) {
@@ -86,27 +85,99 @@ const DeleteUserScreen = () => {
   };
 
   return (
-    <AppSafeView style={styles.container}>
-      <Image source={images.appLogo} style={styles.logo} />
-      <AppTextInputController
-        control={control}
-        name={"password"}
-        placeholder={t("Password")}
-        secureTextEntry
-      />
-      <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton
-        title={t("Delete My Account")}
-        onPress={handleSubmit(deactivateUser)}
-        style={{ backgroundColor: AppColors.red }}
-      />
-      <AppButton
-        title={t("Cancel")}
-        onPress={() => navigation.navigate("ProfileScreen")}
-        style={styles.signInButton}
-        textColor={AppColors.primary}
-      />
-    </AppSafeView>
+    <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 24,
+              borderRadius: 12,
+              width: "85%",
+              alignItems: "center",
+            }}
+          >
+            <AppText
+              style={{
+                fontSize: 18,
+                fontWeight: "600",
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
+              Are you sure?
+            </AppText>
+
+            <AppText
+              style={{
+                textAlign: "center",
+                marginBottom: 24,
+                color: "#555",
+              }}
+            >
+              This will permanently delete your account and all associated data.
+              {"\n"}
+              This action cannot be undone.
+            </AppText>
+
+            {/* Confirm button – triggers the actual deletion with password validation */}
+            <AppButton
+              title="Yes, Delete My Account"
+              onPress={() => {
+                setModalVisible(false);
+                // This calls your existing form submission (password validation + deactivateUser)
+                handleSubmit(deactivateUser)();
+              }}
+              style={{
+                backgroundColor: AppColors.red,
+                width: "100%",
+                marginBottom: 12,
+              }}
+            />
+
+            <AppButton
+              title="Cancel"
+              onPress={() => setModalVisible(false)}
+              style={styles.signInButton}
+              textColor={AppColors.primary}
+            />
+          </View>
+        </View>
+      </Modal>
+      <AppSafeView style={styles.container}>
+        <Image source={images.appLogo} style={styles.logo} />
+        <AppTextInputController
+          control={control}
+          name={"password"}
+          placeholder={t("Password")}
+          secureTextEntry
+        />
+        <AppText style={styles.appName}>Smart E-Commerce</AppText>
+        <AppButton
+          title={t("Deactivate My Account")}
+          onPress={handleSubmit(handleDeletePress)}
+          style={{ backgroundColor: AppColors.red }}
+        />
+        <AppButton
+          title={t("Cancel")}
+          onPress={() => navigation.navigate("ProfileScreen")}
+          style={styles.signInButton}
+          textColor={AppColors.primary}
+        />
+      </AppSafeView>
+    </>
   );
 };
 
