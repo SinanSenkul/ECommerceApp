@@ -54,5 +54,7 @@
   "auth/invalid-credential":"auth/invalid-credential",
   "Username or password is wrong": "Username or password is wrong",
   "Guest Entrance": "Guest Entrance",
-  "Welcome Guest!": "Welcome Guest!"
+  "Welcome Guest!": "Welcome Guest!",
+  "Day Mode": "Day Mode",
+  "Night Mode": "Night Mode"
 }

@@ -6,13 +6,13 @@ import { AppFonts } from '../../styles/fonts';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 
-interface AppTextProps extends TextProps {
+interface AppButtonTextProps extends TextProps {
   children?: React.ReactNode;
   style?: TextStyle | TextStyle[];
   variant?: "bold" | "medium";
 }
 
-const AppText: FC<AppTextProps> = ({
+const AppButtonText: FC<AppButtonTextProps> = ({
   children,
   style,
   variant = "medium",
@@ -21,8 +21,7 @@ const AppText: FC<AppTextProps> = ({
   const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
     const isNight = mode === "nightMode";
     const lightMode = {
-      backgroundColor: isNight ? "#121212" : "#FFFFFF",
-      textColor: isNight ? "#FFFFFF" : "#121212",
+      textColor: isNight ? "#121212" : "#FFFFFF",
     };
   return (
     <Text {...rest} style={[styles[variant], style, {color:lightMode.textColor}]}>
@@ -31,7 +30,7 @@ const AppText: FC<AppTextProps> = ({
   );
 };
 
-export default AppText
+export default AppButtonText
 
 const styles = StyleSheet.create({
   bold: {

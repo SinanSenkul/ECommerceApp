@@ -69,7 +69,7 @@ const DeleteUserScreen = () => {
           // navigation.navigate("MainAppBottomTabs");
         })
         .catch((error) => {
-          let message = t("Deactivation failed");
+          let message = t("Deletion failed");
           showMessage({
             message: message,
             type: "danger",
@@ -166,13 +166,13 @@ const DeleteUserScreen = () => {
         />
         <AppText style={styles.appName}>Smart E-Commerce</AppText>
         <AppButton
-          title={t("Deactivate My Account")}
+          title={t("Delete My Account")}
           onPress={handleSubmit(handleDeletePress)}
           style={{ backgroundColor: AppColors.red }}
         />
         <AppButton
           title={t("Cancel")}
-          onPress={() => navigation.navigate("ProfileScreen")}
+          onPress={() => navigation.goBack()}
           style={styles.signInButton}
           textColor={AppColors.primary}
         />

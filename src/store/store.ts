@@ -13,12 +13,14 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+import appColorSlice from "./reducers/appColorSlice";
 
 export const store = configureStore({
   reducer: {
     cartSlice: persistedCartSlice,
     userSlice,
     languageSlice,
+    appColor: appColorSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

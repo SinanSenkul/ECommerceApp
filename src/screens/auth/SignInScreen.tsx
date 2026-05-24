@@ -15,13 +15,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
 import { AppFonts } from "../../styles/fonts";
 import { t } from "i18next";
 import { LoggedIn } from "../../helpers/loggedIn";
+import { RootState } from "../../store/store";
+import appColorReducer from "../../../src/store/reducers/appColorSlice";
 
 //validation
 const schema = yup
@@ -37,6 +39,13 @@ const SignInScreen = () => {
   const navigation = useNavigation(); //navigation
   const dispatch = useDispatch(); //redux
   const { t } = useTranslation(); //localization
+
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode 
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? "#121212" : "#FFFFFF",
+    textColor: isNight ? "#FFFFFF" : "#121212",
+  };
 
   //validation
   const { control, handleSubmit } = useForm({
@@ -80,7 +89,7 @@ const SignInScreen = () => {
 
   // user will be able to type either his username or email here
   return (
-    <AppSafeView style={styles.container}>
+    <AppSafeView style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}>
       <Image source={images.appLogo} style={styles.logo} />
       <AppTextInputController
         control={control}
@@ -117,6 +126,7 @@ export default SignInScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex:1,
     alignItems: "center",
     paddingHorizontal: sharedStyles.paddingHorizontal,
   },

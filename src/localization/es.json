@@ -54,5 +54,7 @@
   "auth/invalid-credential": "auth/invalid-credential",
   "Username or password is wrong": "Usuario o contraseña incorrectos",
   "Guest Entrance": "Entrar sin Suscribirse",
-  "Welcome Guest!": "Bienvenidos!"
+  "Welcome Guest!": "Bienvenidos!",
+  "Day Mode": "Modo Claro",
+  "Night Mode": "Modo Oscuro"
 }

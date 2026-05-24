@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.75,
     paddingBottom: vs(4),
     borderColor: AppColors.blueGray,
+    gap: s(10)
   },
   imageContainer: {
     flex: 1.5,

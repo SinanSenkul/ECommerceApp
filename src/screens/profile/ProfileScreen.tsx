@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import React, { FC } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import HomeHeader from "../../components/headers/HomeHeader";
 import AppSafeView from "../../components/views/AppSafeView";
 import ProfileSectionButton from "../../components/buttons/ProfileSectionButton";
@@ -18,6 +18,10 @@ import * as Linking from "expo-linking";
 import { Platform, Alert } from "react-native";
 import ProfileScreenUnsub from "./ProfileScreenUnsub";
 import { emptyItems } from "../../store/reducers/cartSlice";
+import {
+  switchLightMode,
+  switchToDayMode,
+} from "../../store/reducers/appColorSlice";
 
 interface IProfileScreen {
   username?: string;
@@ -25,18 +29,30 @@ interface IProfileScreen {
 
 const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation();
-  const { userData } = useSelector((state: RootState) => state.userSlice);
   const dispatch = useDispatch(); //redux
   const user = auth.currentUser;
   const authInstance = getAuth();
-  const userName = user?.email?.split("@")[0];
 
   const { t } = useTranslation(); //localization
+
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? "#121212" : "#FFFFFF",
+    textColor: isNight ? "#FFFFFF" : "#121212",
+  };
+
+  //animation to be added here later
+
+  const handlePress = () => {
+    dispatch(switchLightMode());
+  };
 
   const LoggedOut = async () => {
     try {
       dispatch(deleteUserData());
-      dispatch(emptyItems())
+      dispatch(emptyItems());
+      dispatch(switchToDayMode());
       await signOut(authInstance);
     } catch (e) {
       console.error("logout error: ", e);
@@ -67,8 +83,13 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   }
 
   return (
-    <>
-      <AppSafeView>
+    <View style={styles.container}>
+      <AppSafeView
+        style={[
+          styles.container,
+          { backgroundColor: lightMode.backgroundColor },
+        ]}
+      >
         <HomeHeader />
         <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
           <ProfileSectionButton
@@ -92,22 +113,31 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
           />
 
           <ProfileSectionButton
-            title={t("Deactivate Account")}
+            title={t("Delete Account")}
             onPress={() => {
               navigation.navigate("DeleteUserScreen");
             }}
           />
+          <ProfileSectionButton
+            title={isNight ? t("Day Mode") : t("Night Mode")}
+            onPress={handlePress}
+          />
         </View>
+
         <AppButton
           title={t("Back")}
           style={{ marginTop: vs(5) }}
           onPress={() => navigation.goBack()}
         />
       </AppSafeView>
-    </>
+    </View>
   );
 };
 
 export default ProfileScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

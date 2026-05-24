@@ -5,6 +5,8 @@ import { AppColors } from '../../styles/colors';
 import { s, vs } from "react-native-size-matters";
 import { AppFonts } from '../../styles/fonts';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
 
 interface IProfileSectionButton {
   onPress?: () => void;

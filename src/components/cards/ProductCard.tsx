@@ -1,36 +1,45 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
-import React, { FC, useState } from 'react'
-import { s,vs } from 'react-native-size-matters'
-import { AppColors } from '../../styles/colors'
-import AppText from '../texts/AppText'
-import { AppFonts } from '../../styles/fonts'
-import { Ionicons } from '@expo/vector-icons'
-import { AppStyles } from '../../styles/sharedStyles'
-import { useSelector } from 'react-redux'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import React, { FC, useState } from "react";
+import { s, vs } from "react-native-size-matters";
+import { AppColors } from "../../styles/colors";
+import AppText from "../texts/AppText";
+import { AppFonts } from "../../styles/fonts";
+import { Ionicons } from "@expo/vector-icons";
+import { AppStyles } from "../../styles/sharedStyles";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface ProductCardProps {
   price: number;
   title: string;
   imageURL: string;
   onAddToCartPress: () => void;
-  qty: number
+  qty: number;
 }
 
 const ProductCard: FC<ProductCardProps> = ({
   price,
   title,
   imageURL,
-  qty=0,
+  qty = 0,
   onAddToCartPress,
 }) => {
   const [imgSource, setImgSource] = useState(imageURL);
   const handleImageError = () => {
     setImgSource(
-      "https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg"
+      "https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg",
     );
   };
+
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? "#808080" : "#FFFFFF",
+    textColor: isNight ? "#FFFFFF" : "#808080",
+  };
+
   return (
-    <View style={[styles.container, AppStyles.shadow]}>
+    <View style={[styles.container, AppStyles.shadow, { backgroundColor: lightMode.backgroundColor }]}>
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.addToCartButton}
@@ -54,7 +63,7 @@ const ProductCard: FC<ProductCardProps> = ({
   );
 };
 
-export default ProductCard
+export default ProductCard;
 
 const styles = StyleSheet.create({
   container: {
@@ -72,6 +81,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: s(10),
     height: vs(130),
     width: "100%",
+    backgroundColor:AppColors.white
   },
   image: {
     width: "100%",
@@ -103,8 +113,8 @@ const styles = StyleSheet.create({
     top: 5,
     borderRadius: s(14),
     backgroundColor: AppColors.primary,
-    zIndex:1,
-    alignItems:"center",
-    justifyContent:"center"
-  }
+    zIndex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

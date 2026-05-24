@@ -12,6 +12,7 @@ import { addItem } from "../../store/reducers/cartSlice";
 import { getProductsData } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
 import { getAuth } from "firebase/auth";
+import { RootState } from "../../store/store";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -32,6 +33,13 @@ const HomeScreen = () => {
 
   const { t } = useTranslation();
 
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? "#121212" : "#FFFFFF",
+    textColor: isNight ? "#FFFFFF" : "#121212",
+  };
+
   const onAddtoCartHandler = (item) => {
     if (user) {
       showMessage({
@@ -42,7 +50,7 @@ const HomeScreen = () => {
         icon: "success",
       });
       dispatch(addItem(item));
-    }else{
+    } else {
       showMessage({
         message: t("You must sign up to add it to your card"),
         type: "none",
@@ -54,7 +62,9 @@ const HomeScreen = () => {
   };
 
   return (
-    <AppSafeView style={styles.container}>
+    <AppSafeView
+      style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}
+    >
       <HomeHeader />
       <FlatList
         columnWrapperStyle={{
@@ -81,7 +91,7 @@ const HomeScreen = () => {
             //   });
             //   dispatch(addItem(item));
             // }}
-            onAddToCartPress={()=>onAddtoCartHandler(item)}
+            onAddToCartPress={() => onAddtoCartHandler(item)}
           />
         )}
         keyExtractor={(item) => item.id.toString()}

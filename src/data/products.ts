@@ -26,10 +26,10 @@ export const products = [
   {
     id: 4,
     price: 1299,
-    title: "Samsung Phone",
+    title: "Iphone 7 Plus",
     qty:0,
     imageURL:
-      "https://d1b5h9psu9yexj.cloudfront.net/60226/Samsung-Galaxy-S24_20240319-183738_full.jpeg",
+      "https://assets.getmobil.com/uploads/2600/getmobil-apple-iphonese7plus-jetblack-00png.png",
   },
   {
     id: 5,

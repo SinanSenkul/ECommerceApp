@@ -30,8 +30,15 @@ const CartScreen = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation(); //localization
 
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? AppColors.backgroundBlack : AppColors.backgroundWhite,
+    textColor: isNight ? AppColors.white : AppColors.black,
+  };
+
   return (
-    <AppSafeView style={{ flex: 1, flexDirection: "column" }}>
+    <AppSafeView style={[{ flex: 1, flexDirection: "column" }, {backgroundColor:lightMode.backgroundColor}]}>
       <HomeHeader />
       <View
         style={{

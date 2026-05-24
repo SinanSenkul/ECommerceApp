@@ -26,6 +26,14 @@ const CheckoutScreen = () => {
   const { t } = useTranslation();
   const [userId, setuserId] = useState("");
 
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? AppColors.backgroundBlack : AppColors.backgroundWhite,
+    textColor: isNight ? AppColors.white : AppColors.black,
+    inputContainerBG: isNight ? AppColors.inkBlack : AppColors.backgroundWhite,
+  };
+
   const getUserId = async () => {
     let userDataStringified = await AsyncStorage.getItem("user-data");
     if (userDataStringified) {
@@ -38,7 +46,6 @@ const CheckoutScreen = () => {
     getUserId();
   }, []);
 
-  
   const schema = yup
     .object({
       fullName: yup.string().required("Name is required!"),
@@ -110,7 +117,9 @@ const CheckoutScreen = () => {
 
   // when text is written it'll be changed in global and if user goes back and again comes to checkout his information will be there
   return (
-    <AppSafeView style={{ flex: 1 }}>
+    <AppSafeView
+      style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}
+    >
       <HomeHeader />
       <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
         <AppButton
@@ -118,7 +127,12 @@ const CheckoutScreen = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         />
-        <View style={styles.inputContainer}>
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: lightMode.inputContainerBG },
+          ]}
+        >
           <AppTextInputController
             control={control}
             name={"fullName"}
@@ -148,6 +162,11 @@ const CheckoutScreen = () => {
 export default CheckoutScreen;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection:"column",
+    gap: vs(10),
+  },
   inputContainer: {
     ...AppStyles.shadow,
     padding: s(8),
@@ -159,7 +178,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: sharedStyles.paddingHorizontal,
     position: "absolute",
-    bottom: vs(3),
+    bottom: vs(15),
     width: "100%",
   },
   backButton: {

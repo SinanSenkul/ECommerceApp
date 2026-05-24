@@ -1,8 +1,16 @@
-import { StyleSheet, Text, TextStyle, TouchableOpacity, View } from 'react-native'
-import React, { FC } from 'react'
-import { s, vs } from 'react-native-size-matters';
-import AppText from '../texts/AppText';
-import { AppColors } from '../../styles/colors';
+import {
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { FC } from "react";
+import { s, vs } from "react-native-size-matters";
+import { AppColors } from "../../styles/colors";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import AppButtonText from "../texts/AppButtonText";
 
 interface AppButtonProps {
   onPress?: () => void;
@@ -11,7 +19,7 @@ interface AppButtonProps {
   backgroundColor?: string;
   textColor?: string;
   titleStyle?: TextStyle | TextStyle[];
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 const AppButton: FC<AppButtonProps> = ({
@@ -23,23 +31,32 @@ const AppButton: FC<AppButtonProps> = ({
   titleStyle,
   disabled = false,
 }) => {
+  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? "#FFFFFF" : "#121212",
+  };
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      style={[styles.button, { backgroundColor: disabled ? AppColors.disabledGray : backgroundColor }, style]}
+      style={[
+        styles.button,
+        {
+          // backgroundColor: disabled ? AppColors.disabledGray : backgroundColor,
+          backgroundColor:lightMode.backgroundColor
+        },
+        style,
+      ]}
     >
-      <AppText
-        style={[styles.title, { color: disabled ? "#000" : textColor }, titleStyle]}
-        variant="medium"
-      >
+      <AppButtonText style={[styles.title, titleStyle]} variant="medium">
         {title}
-      </AppText>
+      </AppButtonText>
     </TouchableOpacity>
   );
 };
 
-export default AppButton
+export default AppButton;
 
 const styles = StyleSheet.create({
   button: {
