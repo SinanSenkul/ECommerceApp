@@ -51,7 +51,7 @@
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.anonymous.ecommerceapp",
+          "merchantIdentifier": "",
           "enableGooglePay": false
         }
       ]
