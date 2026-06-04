@@ -2,10 +2,12 @@ import { configureStore } from "@reduxjs/toolkit";
 import cartSlice from "./reducers/cartSlice";
 import userSlice from "./reducers/userSlice";
 import languageSlice from "./reducers/languageSlice";
-import { persistedCartSlice } from "./persist/persistConfig";
+import {
+  persistedAppColorSlice,
+  persistedCartSlice,
+} from "./persist/persistConfig";
 import {
   persistStore,
-  persistReducer,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -13,14 +15,13 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
-import appColorSlice from "./reducers/appColorSlice";
 
 export const store = configureStore({
   reducer: {
     cartSlice: persistedCartSlice,
     userSlice,
     languageSlice,
-    appColor: appColorSlice,
+    appColor: persistedAppColorSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Image, Alert, Modal, View } from "react-native";
+import { StyleSheet, Image, Alert, Modal, View } from "react-native";
 import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
@@ -15,10 +15,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 // import { auth } from "../../config/firebase";
 import { getAuth, deleteUser, signOut } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch } from "react-redux";
-import { deleteUserData, setUserData } from "../../store/reducers/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteUserData } from "../../store/reducers/userSlice";
 import { t } from "i18next";
 import { useTranslation } from "react-i18next";
+import { RootState } from "../../store/store";
 
 const schema = yup
   .object({
@@ -38,6 +39,18 @@ const DeleteUserScreen = () => {
   const auth = getAuth();
   const user = auth.currentUser;
   const [modalVisible, setModalVisible] = useState(false);
+  const { mode } = useSelector((state: RootState) => state.appColor);
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight
+      ? AppColors.backgroundBlack
+      : AppColors.backgroundWhite,
+    surfaceColor: isNight ? AppColors.inkBlack : AppColors.white,
+    logoTintColor: isNight ? AppColors.white : AppColors.black,
+    cancelButtonBackground: isNight ? AppColors.inkBlack : AppColors.white,
+    cancelButtonText: isNight ? AppColors.white : AppColors.primary,
+    borderColor: isNight ? AppColors.white : AppColors.primary,
+  };
 
   const { control, handleSubmit } = useForm({
     resolver: yupResolver(schema),
@@ -50,6 +63,17 @@ const DeleteUserScreen = () => {
   const deactivateUser = async (data: formData) => {
     if (!data.password) {
       Alert.alert(t("Error, please fill in all fields"));
+      return;
+    }
+    if (!user) {
+      showMessage({
+        message: t("Deletion failed"),
+        type: "danger",
+        duration: 1000,
+        floating: true,
+        icon: "danger",
+        position: "top",
+      });
       return;
     }
     try {
@@ -102,7 +126,7 @@ const DeleteUserScreen = () => {
         >
           <View
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: lightMode.surfaceColor,
               padding: 24,
               borderRadius: 12,
               width: "85%",
@@ -124,7 +148,6 @@ const DeleteUserScreen = () => {
               style={{
                 textAlign: "center",
                 marginBottom: 24,
-                color: "#555",
               }}
             >
               This will permanently delete your account and all associated data.
@@ -132,9 +155,9 @@ const DeleteUserScreen = () => {
               This action cannot be undone.
             </AppText>
 
-            {/* Confirm button – triggers the actual deletion with password validation */}
+            {/* Confirm button triggers the actual deletion with password validation */}
             <AppButton
-              title="Yes, Delete My Account"
+              title={t("Yes, Delete My Account")}
               onPress={() => {
                 setModalVisible(false);
                 // This calls your existing form submission (password validation + deactivateUser)
@@ -148,16 +171,30 @@ const DeleteUserScreen = () => {
             />
 
             <AppButton
-              title="Cancel"
+              title={t("Cancel")}
               onPress={() => setModalVisible(false)}
-              style={styles.signInButton}
-              textColor={AppColors.primary}
+              style={[
+                styles.signInButton,
+                {
+                  backgroundColor: lightMode.cancelButtonBackground,
+                  borderColor: lightMode.borderColor,
+                },
+              ]}
+              textColor={lightMode.cancelButtonText}
             />
           </View>
         </View>
       </Modal>
-      <AppSafeView style={styles.container}>
-        <Image source={images.appLogo} style={styles.logo} />
+      <AppSafeView
+        style={[
+          styles.container,
+          { backgroundColor: lightMode.backgroundColor },
+        ]}
+      >
+        <Image
+          source={images.appLogo}
+          style={[styles.logo, { tintColor: lightMode.logoTintColor }]}
+        />
         <AppTextInputController
           control={control}
           name={"password"}
@@ -173,8 +210,14 @@ const DeleteUserScreen = () => {
         <AppButton
           title={t("Cancel")}
           onPress={() => navigation.goBack()}
-          style={styles.signInButton}
-          textColor={AppColors.primary}
+          style={[
+            styles.signInButton,
+            {
+              backgroundColor: lightMode.cancelButtonBackground,
+              borderColor: lightMode.borderColor,
+            },
+          ]}
+          textColor={lightMode.cancelButtonText}
         />
       </AppSafeView>
     </>
@@ -185,6 +228,7 @@ export default DeleteUserScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     alignItems: "center",
     paddingHorizontal: sharedStyles.paddingHorizontal,
   },

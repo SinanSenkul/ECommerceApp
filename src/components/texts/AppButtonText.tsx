@@ -1,36 +1,41 @@
-import { StyleSheet, Text, TextProps, TextStyle, View } from 'react-native'
-import React, { Children, FC } from 'react'
+import { Animated, StyleProp, StyleSheet, TextProps, TextStyle } from "react-native";
+import React, { FC } from "react";
 import { s, vs } from "react-native-size-matters";
-import { AppColors } from '../../styles/colors';
-import { AppFonts } from '../../styles/fonts';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { AppColors } from "../../styles/colors";
+import { AppFonts } from "../../styles/fonts";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface AppButtonTextProps extends TextProps {
   children?: React.ReactNode;
-  style?: TextStyle | TextStyle[];
+  style?: StyleProp<TextStyle>;
   variant?: "bold" | "medium";
+  textcolor?: string | Animated.AnimatedInterpolation<string>;
 }
 
 const AppButtonText: FC<AppButtonTextProps> = ({
   children,
   style,
   variant = "medium",
+  textcolor,
   ...rest
 }) => {
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
-    const isNight = mode === "nightMode";
-    const lightMode = {
-      textColor: isNight ? "#121212" : "#FFFFFF",
-    };
+  // const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  // const isNight = mode === "nightMode";
+  // const lightMode = {
+  //   textColor: isNight ? AppColors.black : AppColors.white,
+  // };
   return (
-    <Text {...rest} style={[styles[variant], style, {color:lightMode.textColor}]}>
+    <Animated.Text
+      {...rest}
+      style={[styles[variant], style, { color: textcolor }]}
+    >
       {children}
-    </Text>
+    </Animated.Text>
   );
 };
 
-export default AppButtonText
+export default AppButtonText;
 
 const styles = StyleSheet.create({
   bold: {

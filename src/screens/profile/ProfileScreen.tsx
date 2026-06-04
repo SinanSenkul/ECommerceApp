@@ -28,14 +28,14 @@ interface IProfileScreen {
 }
 
 const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const dispatch = useDispatch(); //redux
   const user = auth.currentUser;
   const authInstance = getAuth();
 
   const { t } = useTranslation(); //localization
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
   const isNight = mode === "nightMode";
   const lightMode = {
     backgroundColor: isNight ? "#121212" : "#FFFFFF",
@@ -97,6 +97,10 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
             onPress={() => navigation.navigate("MyOrdersScreen")}
           />
           <ProfileSectionButton
+            title={t("Sell Items")}
+            onPress={() => navigation.navigate("SellItemScreen")}
+          />
+          <ProfileSectionButton
             title={t("Language")}
             // onPress={() => navigation.navigate("LanguageScreen")}
             onPress={() => {
@@ -127,7 +131,7 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         <AppButton
           title={t("Back")}
           style={{ marginTop: vs(5) }}
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.goBack()} 
         />
       </AppSafeView>
     </View>

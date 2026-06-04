@@ -1,5 +1,5 @@
-import { StyleSheet, Image, Text } from "react-native";
-import React from "react";
+import { StyleSheet, Image } from "react-native";
+import React, { useEffect, useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
@@ -12,8 +12,9 @@ import AppTextInputController from "../../components/inputs/AppTextInputControll
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
@@ -23,7 +24,8 @@ import { AppFonts } from "../../styles/fonts";
 import { t } from "i18next";
 import { LoggedIn } from "../../helpers/loggedIn";
 import { RootState } from "../../store/store";
-import appColorReducer from "../../../src/store/reducers/appColorSlice";
+import SignInAppButton from "../../components/buttons/SignInAppButton";
+import LaunchScreen from "./LaunchScreen";
 
 //validation
 const schema = yup
@@ -34,23 +36,62 @@ const schema = yup
   .required();
 type formData = yup.InferType<typeof schema>;
 
+const getUserProfile = async (uid: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    return userDoc.data();
+  } catch (error) {
+    console.log("user profile could not be fetched: ", error);
+    return undefined;
+  }
+};
+
+const resetToMainApp = (navigation: any) => {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "MainAppBottomTabs" }],
+  });
+};
+
 //screen
 const SignInScreen = () => {
-  const navigation = useNavigation(); //navigation
+  const navigation = useNavigation<any>(); //navigation
   const dispatch = useDispatch(); //redux
   const { t } = useTranslation(); //localization
+  const [isAppLoading, setIsAppLoading] = useState(true);
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode 
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode 
   const isNight = mode === "nightMode";
   const lightMode = {
-    backgroundColor: isNight ? "#121212" : "#FFFFFF",
-    textColor: isNight ? "#FFFFFF" : "#121212",
+    backgroundColor: isNight ? AppColors.backgroundBlack : AppColors.backgroundWhite,
+    textColor: isNight ? AppColors.white : AppColors.black,
+    signUpGuestButtonTextColor: isNight ? AppColors.black : AppColors.white,
   };
 
   //validation
   const { control, handleSubmit } = useForm({
     resolver: yupResolver(schema),
   });
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const userProfile = await getUserProfile(currentUser.uid);
+        const userDataObj = {
+          uid: currentUser.uid,
+          ...(userProfile ?? {}),
+        };
+        dispatch(setUserData(userDataObj));
+        LoggedIn();
+        resetToMainApp(navigation);
+        return;
+      }
+
+      setIsAppLoading(false);
+    });
+
+    return unsubscribe;
+  }, [dispatch, navigation]);
 
   const signIn = async (data: formData) => {
     try {
@@ -59,14 +100,16 @@ const SignInScreen = () => {
         data.userName,
         data.password,
       );
+      const userProfile = await getUserProfile(userCredential.user.uid);
       const userDataObj = {
         uid: userCredential.user.uid,
+        ...(userProfile ?? {}),
       };
       dispatch(emptyItems());
       dispatch(setUserData(userDataObj)); // we get the user data from db rather than reducer currently
       LoggedIn(); //local update
-      navigation.navigate("MainAppBottomTabs");
-    } catch (error) {
+      resetToMainApp(navigation);
+    } catch (error: any) {
       let errorMessage = "";
       if (error.code === t("auth/user-not-found")) {
         errorMessage = t("User not found");
@@ -88,6 +131,10 @@ const SignInScreen = () => {
   };
 
   // user will be able to type either his username or email here
+  if (isAppLoading) {
+    return <LaunchScreen />;
+  }
+
   return (
     <AppSafeView style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}>
       <Image source={images.appLogo} style={styles.logo} />
@@ -105,18 +152,18 @@ const SignInScreen = () => {
       <AppText style={styles.appName}>
         {t("Welcome to Smart E-Commerce")}
       </AppText>
-      <AppButton title={t("Login")} onPress={handleSubmit(signIn)} />
-      <AppButton
+      <AppButton title={t("Login")} onPress={handleSubmit(signIn)} textColor={AppColors.white}/>
+      <SignInAppButton
         title={t("Sign Up")}
         onPress={() => navigation.navigate("SignUpScreen")}
         style={styles.registerButton}
-        textColor={AppColors.primary}
+        textColor={AppColors.black}
       />
-      <AppButton
+      <SignInAppButton
         title={t("Guest Entrance")}
-        onPress={() => navigation.navigate("MainAppBottomTabs")}
+        onPress={() => resetToMainApp(navigation)}
         style={styles.registerButton}
-        textColor={AppColors.primary}
+        textColor={AppColors.black}
       />
     </AppSafeView>
   );

@@ -4,7 +4,6 @@ interface CartItem {
   id: number | string;
   price: number;
   title: string;
-  qty: number;
   imageURL: string;
 }
 
@@ -16,19 +15,31 @@ const state: CartState = {
   items: [],
 };
 
+const toCartItem = (item: Partial<CartItem>): CartItem => ({
+  id: item.id ?? "",
+  price: Number(item.price ?? 0),
+  title: item.title ?? "",
+  imageURL: item.imageURL ?? "",
+});
+
 const cartSlice = createSlice({
   name: "cart",
   initialState: state,
   reducers: {
-    addItem: (state, action) => {
-      const itemInCart = state.items.find(
-        (item) => item.id === action.payload.id,
-      );
-      if (!itemInCart) {
-        state.items.push({ ...action.payload, qty: 1 });
-      } else {
-        itemInCart.qty++;
-      }
+    addItem: {
+      reducer: (state, action: PayloadAction<CartItem>) => {
+        state.items = state.items.map(toCartItem);
+        const cartItem = action.payload;
+        const itemInCart = state.items.find(
+          (item) => item.id === cartItem.id,
+        );
+        if (!itemInCart) {
+          state.items.push(cartItem);
+        }
+      },
+      prepare: (item: Partial<CartItem>) => ({
+        payload: toCartItem(item),
+      }),
     },
     deleteItem: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
@@ -36,22 +47,9 @@ const cartSlice = createSlice({
     emptyItems: (state) => {
       state.items = [];
     },
-    increaseQty: (state, action) => {
-      state.items = state.items.map((item) =>
-        item.id === action.payload.id ? { ...item, qty: item.qty + 1 } : item,
-      );
-    },
-    decreaseQty: (state, action) => {
-      state.items = state.items.map((item) =>
-        item.id === action.payload.id && item.qty > 0
-          ? { ...item, qty: item.qty - 1 }
-          : item,
-      );
-      state.items = state.items.filter((item) => item.qty > 0); //filter items with qty>0, delete 0 qty ones
-    },
   },
 });
 
-export const { addItem, deleteItem, increaseQty, decreaseQty,emptyItems } =
+export const { addItem, deleteItem, emptyItems } =
   cartSlice.actions;
 export default cartSlice.reducer;

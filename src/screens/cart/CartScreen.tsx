@@ -5,18 +5,13 @@ import AppSafeView from "../../components/views/AppSafeView";
 import EmptyCart from "./EmptyCart";
 import CartItem from "../../components/cart/CartItem";
 import TotalsView from "../../components/cart/TotalsView";
-import { products } from "../../data/products";
 import { sharedStyles } from "../../styles/sharedStyles";
 import AppButton from "../../components/buttons/AppButton";
 import { useNavigation } from "@react-navigation/native";
 import { vs } from "react-native-size-matters";
 import { RootState } from "../../store/store";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  decreaseQty,
-  deleteItem,
-  increaseQty,
-} from "../../store/reducers/cartSlice";
+import { deleteItem } from "../../store/reducers/cartSlice";
 import { fee, tax } from "../../constants/constants";
 import { AppColors } from "../../styles/colors";
 import { useTranslation } from "react-i18next";
@@ -24,21 +19,28 @@ import { useTranslation } from "react-i18next";
 const CartScreen = () => {
   const navigation = useNavigation();
   const { items } = useSelector((state: RootState) => state.cartSlice);
-  const price = items.reduce((acc, item) => acc + item.price * item.qty, 0); //sum up all the prices
+  const price = items.reduce((acc, item) => acc + item.price, 0); //sum up all the prices
   const sum = price > 0 ? price + tax + fee : 0;
+
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight
+      ? AppColors.backgroundBlack
+      : AppColors.backgroundWhite,
+    textColor: isNight ? AppColors.white : AppColors.black,
+  };
 
   const dispatch = useDispatch();
   const { t } = useTranslation(); //localization
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
-  const isNight = mode === "nightMode";
-  const lightMode = {
-    backgroundColor: isNight ? AppColors.backgroundBlack : AppColors.backgroundWhite,
-    textColor: isNight ? AppColors.white : AppColors.black,
-  };
-
   return (
-    <AppSafeView style={[{ flex: 1, flexDirection: "column" }, {backgroundColor:lightMode.backgroundColor}]}>
+    <AppSafeView
+      style={[
+        { flex: 1, flexDirection: "column" },
+        { backgroundColor: lightMode.backgroundColor },
+      ]}
+    >
       <HomeHeader />
       <View
         style={{
@@ -55,10 +57,7 @@ const CartScreen = () => {
               renderItem={({ item }) => (
                 <CartItem
                   {...item}
-                  price={item.price * item.qty}
                   onDeletePress={() => dispatch(deleteItem(item.id))}
-                  onIncreasePress={() => dispatch(increaseQty(item))}
-                  onDecreasePress={() => dispatch(decreaseQty(item))}
                 />
               )}
             />

@@ -15,7 +15,7 @@ const EmptyCart = () => {
   const navigation = useNavigation();
   const { t } = useTranslation(); //localization
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
   const isNight = mode === "nightMode";
   const lightMode = {
     backgroundColor: isNight ? "#121212" : "#FFFFFF",

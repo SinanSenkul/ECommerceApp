@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Image, Alert } from "react-native";
+import { StyleSheet, Image, Alert, ScrollView } from "react-native";
 import React, { useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
@@ -13,16 +13,24 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { auth } from "../../config/firebase";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
 import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 import { LoggedIn } from "../../helpers/loggedIn";
+import { db } from "../../config/firebase";
 
 const schema = yup
   .object({
+    firstName: yup.string().required(t("Name is required!")),
+    lastName: yup.string().required(t("Last name is required!")),
+    address: yup
+      .string()
+      .min(15, t("Address must be at least 15 characters long"))
+      .required(t("Detailed address is required!")),
     emailAddress: yup
       .string()
       .email(t("This is not a valid email!"))
@@ -40,9 +48,16 @@ const schema = yup
 
 type formData = yup.InferType<typeof schema>;
 
+const resetToMainApp = (navigation: any) => {
+  navigation.reset({
+    index: 0,
+    routes: [{ name: "MainAppBottomTabs" }],
+  });
+};
+
 const SignUpScreen = () => {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization tool
 
   const { control, handleSubmit } = useForm({
@@ -50,7 +65,13 @@ const SignUpScreen = () => {
   });
 
   const signUp = async (data: formData) => {
-    if (!data.emailAddress || !data.password) {
+    if (
+      !data.firstName ||
+      !data.lastName ||
+      !data.address ||
+      !data.emailAddress ||
+      !data.password
+    ) {
       Alert.alert(t("Error, please fill in all fields"));
       return;
     }
@@ -61,8 +82,21 @@ const SignUpScreen = () => {
         data.emailAddress.trim(),
         data.password,
       );
+      const userProfile = {
+        uid: userCredential.user.uid,
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        address: data.address.trim(),
+        email: data.emailAddress.trim(),
+        createdAt: serverTimestamp(),
+      };
+      await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
       const userDataObj = {
         uid: userCredential.user.uid,
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        address: data.address.trim(),
+        email: data.emailAddress.trim(),
       };
       LoggedIn();
       dispatch(setUserData(userDataObj));
@@ -75,8 +109,8 @@ const SignUpScreen = () => {
         position: "top",
       });
       // Navigate to login or home screen
-      navigation.navigate("MainAppBottomTabs");
-    } catch (error) {
+      resetToMainApp(navigation);
+    } catch (error: any) {
       let message = t("Sign-up failed");
       if (error.code === "auth/email-already-in-use") {
         message = t("Email is already in use");
@@ -99,29 +133,49 @@ const SignUpScreen = () => {
 
   return (
     <AppSafeView style={styles.container}>
-      <Image source={images.appLogo} style={styles.logo} />
-      <AppTextInputController
-        control={control}
-        name={"emailAddress"}
-        placeholder={t("Email")}
-      />
-      <AppTextInputController
-        control={control}
-        name={"password"}
-        placeholder={t("Password")}
-        secureTextEntry
-      />
-      <AppText style={styles.appName}>Smart E-Commerce</AppText>
-      <AppButton
-        title={t("Create New Account")}
-        onPress={handleSubmit(signUp)}
-      />
-      <AppButton
-        title={t("Go to Sign In")}
-        onPress={() => navigation.navigate("SignInScreen")}
-        style={styles.signInButton}
-        textColor={AppColors.primary}
-      />
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.contentContainer}
+      >
+        <Image source={images.appLogo} style={styles.logo} />
+        <AppTextInputController
+          control={control}
+          name={"firstName"}
+          placeholder={t("Name")}
+        />
+        <AppTextInputController
+          control={control}
+          name={"lastName"}
+          placeholder={t("Last Name")}
+        />
+        <AppTextInputController
+          control={control}
+          name={"address"}
+          placeholder={t("Address")}
+        />
+        <AppTextInputController
+          control={control}
+          name={"emailAddress"}
+          placeholder={t("Email")}
+        />
+        <AppTextInputController
+          control={control}
+          name={"password"}
+          placeholder={t("Password")}
+          secureTextEntry
+        />
+        <AppText style={styles.appName}>Smart E-Commerce</AppText>
+        <AppButton
+          title={t("Create New Account")}
+          onPress={handleSubmit(signUp)}
+        />
+        <AppButton
+          title={t("Go to Sign In")}
+          onPress={() => navigation.navigate("SignInScreen")}
+          style={styles.signInButton}
+          textColor={AppColors.primary}
+        />
+      </ScrollView>
     </AppSafeView>
   );
 };
@@ -130,8 +184,12 @@ export default SignUpScreen;
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
+    flex: 1,
     paddingHorizontal: sharedStyles.paddingHorizontal,
+  },
+  contentContainer: {
+    alignItems: "center",
+    paddingBottom: vs(24),
   },
   logo: {
     height: vs(150),

@@ -5,19 +5,23 @@ interface AppColorState {
 }
 
 const state: AppColorState = {
-  mode: "",
+  mode: "dayMode",
 };
 
 const appColorSlice = createSlice({
   name: "appColor",
-  initialState: "dayMode" as string,
+  initialState: state,
   reducers: {
     switchLightMode: (state) => {
-      return state === "dayMode" ? "nightMode" : "dayMode";
+      if (state.mode === "dayMode") {
+        state.mode = "nightMode";
+      } else {
+        state.mode = "dayMode";
+      }
     },
-    switchToDayMode:(state)=>{
-      return "dayMode"
-    }
+    switchToDayMode: (state) => {
+      state.mode = "dayMode";
+    },
   },
 });
 

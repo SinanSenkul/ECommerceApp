@@ -40,8 +40,21 @@
           "imageWidth": 200
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Smart E-Commerce to access your photos so you can choose product pictures."
+        }
+      ],
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.anonymous.ecommerceapp",
+          "enableGooglePay": false
+        }
+      ]
     ],
     "extra": {
       "eas": {

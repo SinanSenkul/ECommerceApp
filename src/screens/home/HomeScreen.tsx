@@ -1,6 +1,6 @@
-import { StyleSheet, View, Text, Alert } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { StyleSheet } from "react-native";
+import React, { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import AppSafeView from "../../components/views/AppSafeView";
 import HomeHeader from "../../components/headers/HomeHeader";
 import ProductCard from "../../components/cards/ProductCard";
@@ -15,10 +15,9 @@ import { getAuth } from "firebase/auth";
 import { RootState } from "../../store/store";
 
 const HomeScreen = () => {
-  const navigation = useNavigation();
-  // const { items } = useSelector((state: RootState) => state.cartSlice);
+  const { items } = useSelector((state: RootState) => state.cartSlice);
   const dispatch = useDispatch();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -27,21 +26,34 @@ const HomeScreen = () => {
     setProducts(data);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, []),
+  );
 
   const { t } = useTranslation();
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
   const isNight = mode === "nightMode";
   const lightMode = {
     backgroundColor: isNight ? "#121212" : "#FFFFFF",
     textColor: isNight ? "#FFFFFF" : "#121212",
   };
 
-  const onAddtoCartHandler = (item) => {
+  const onAddtoCartHandler = (item: any) => {
     if (user) {
+      if (items.some((cartItem) => cartItem.id === item.id)) {
+        showMessage({
+          message: t("Item is already in your cart"),
+          type: "info",
+          duration: 1000,
+          floating: true,
+          icon: "info",
+        });
+        return;
+      }
+
       showMessage({
         message: t("Added to Card"),
         type: "success",
@@ -49,7 +61,14 @@ const HomeScreen = () => {
         floating: true,
         icon: "success",
       });
-      dispatch(addItem(item));
+      dispatch(
+        addItem({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          imageURL: item.imageURL,
+        }),
+      );
     } else {
       showMessage({
         message: t("You must sign up to add it to your card"),
@@ -79,8 +98,7 @@ const HomeScreen = () => {
           <ProductCard
             price={item.price}
             title={item.title}
-            imageURL={item.imageURL}
-            qty={item.qty}
+            imageURL={item.imageURL ?? ""}
             // onAddToCartPress={() => {
             //   showMessage({
             //     message: t("Added to Card"),

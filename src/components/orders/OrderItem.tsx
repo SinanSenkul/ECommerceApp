@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { FC, useEffect, useState } from "react";
 import { s, vs } from "react-native-size-matters";
 import { AppColors } from "../../styles/colors";
@@ -7,6 +7,8 @@ import { AppFonts } from "../../styles/fonts";
 import { AppStyles } from "../../styles/sharedStyles";
 import { formatFirestoreDate } from "../../helpers/dateFormatter";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface IOrderItem {
   totalPrice?: number;
@@ -15,6 +17,13 @@ interface IOrderItem {
 
 const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
   const [dateStringified, setDateStringified] = useState(date);
+  const { mode } = useSelector((state: RootState) => state.appColor);
+  const isNight = mode === "nightMode";
+  const lightMode = {
+    backgroundColor: isNight ? AppColors.inkBlack : AppColors.white,
+    borderColor: isNight ? AppColors.medGray : AppColors.blueGray,
+    separatorColor: isNight ? AppColors.medGray : AppColors.blueGray,
+  };
 
   useEffect(() => {
     if (typeof date !== "string") {
@@ -26,9 +35,23 @@ const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
   const { t } = useTranslation(); //localization
 
   return (
-    <View style={[styles.container, AppStyles.shadow]}>
+    <View
+      style={[
+        styles.container,
+        AppStyles.shadow,
+        {
+          backgroundColor: lightMode.backgroundColor,
+          borderColor: lightMode.borderColor,
+        },
+      ]}
+    >
       <AppText style={styles.title}>{t("ORDER DETAILS:")}</AppText>
-      <View style={styles.separator}></View>
+      <View
+        style={[
+          styles.separator,
+          { borderBottomColor: lightMode.separatorColor },
+        ]}
+      ></View>
       <AppText style={styles.text}>{t("Total Price:")} {totalPrice} ₺</AppText>
       {/* <AppText style={styles.text}>Date: {date?.toString()}</AppText> */}
       <AppText style={styles.text}>{t("Date:")} {dateStringified?.toString()}</AppText>

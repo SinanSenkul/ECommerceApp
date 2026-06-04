@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import React, { FC, useState } from "react";
 import { s, vs } from "react-native-size-matters";
 import { AppColors } from "../../styles/colors";
@@ -14,14 +14,12 @@ interface ProductCardProps {
   title: string;
   imageURL: string;
   onAddToCartPress: () => void;
-  qty: number;
 }
 
 const ProductCard: FC<ProductCardProps> = ({
   price,
   title,
   imageURL,
-  qty = 0,
   onAddToCartPress,
 }) => {
   const [imgSource, setImgSource] = useState(imageURL);
@@ -31,15 +29,21 @@ const ProductCard: FC<ProductCardProps> = ({
     );
   };
 
-  const mode = useSelector((state: RootState) => state.appColor); // nightmode/daymode
+  const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
   const isNight = mode === "nightMode";
   const lightMode = {
-    backgroundColor: isNight ? "#808080" : "#FFFFFF",
-    textColor: isNight ? "#FFFFFF" : "#808080",
+    backgroundColor: isNight ? AppColors.inkBlack : AppColors.white,
+    textColor: isNight ? AppColors.white : AppColors.black,
   };
 
   return (
-    <View style={[styles.container, AppStyles.shadow, { backgroundColor: lightMode.backgroundColor }]}>
+    <View
+      style={[
+        styles.container,
+        AppStyles.shadow,
+        { backgroundColor: lightMode.backgroundColor },
+      ]}
+    >
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.addToCartButton}
@@ -56,7 +60,9 @@ const ProductCard: FC<ProductCardProps> = ({
         />
       </View>
       <View style={styles.detailsContainer}>
-        <AppText style={styles.titleText}>{title}</AppText>
+        <AppText style={styles.titleText} numberOfLines={1}>
+          {title}
+        </AppText>
         <AppText style={styles.priceText}>{price} ₺</AppText>
       </View>
     </View>
@@ -79,9 +85,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderTopLeftRadius: s(10),
     borderTopRightRadius: s(10),
-    height: vs(130),
+    height: vs(155),
     width: "100%",
-    backgroundColor:AppColors.white
+    backgroundColor: AppColors.white,
   },
   image: {
     width: "100%",
@@ -90,20 +96,27 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flex: 1,
-    paddingTop: s(8),
-    paddingBottom: vs(15),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    columnGap: s(8),
+    paddingTop: s(2),
+    paddingBottom: vs(2),
     paddingHorizontal: s(10),
   },
   titleText: {
+    flex: 1,
     fontSize: s(14),
     fontFamily: AppFonts.Medium,
     color: AppColors.primary,
+    textAlign: "left",
   },
   priceText: {
+    flexShrink: 0,
     fontSize: s(14),
     fontFamily: AppFonts.Bold,
     color: AppColors.primary,
-    marginTop: vs(7),
+    textAlign: "right",
   },
   addToCartButton: {
     height: s(28),

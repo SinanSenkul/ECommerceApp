@@ -1,13 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createStore } from "redux";
-import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage";
+import { persistReducer } from "redux-persist";
+import appColorSlice from "../reducers/appColorSlice";
 import cartSlice from "../reducers/cartSlice";
 
-const persistConfig = {
+const cartPersistConfig = {
   key: "cart",
   storage: AsyncStorage,
-  whiteList: ["items"],
+  whitelist: ["items"],
 };
 
-export const persistedCartSlice = persistReducer(persistConfig, cartSlice);
+const appColorPersistConfig = {
+  key: "appColor",
+  storage: AsyncStorage,
+  whitelist: ["mode"],
+};
+
+export const persistedCartSlice = persistReducer(cartPersistConfig, cartSlice);
+export const persistedAppColorSlice = persistReducer(
+  appColorPersistConfig,
+  appColorSlice,
+);
