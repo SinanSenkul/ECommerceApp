@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface AppColorState {
+interface DayNightModeState {
   mode: string;
 }
 
-const state: AppColorState = {
+const state: DayNightModeState = {
   mode: "dayMode",
 };
 
-const appColorSlice = createSlice({
+const dayNightModeSlice = createSlice({
   name: "appColor",
   initialState: state,
   reducers: {
@@ -25,5 +25,6 @@ const appColorSlice = createSlice({
   },
 });
 
-export const { switchLightMode, switchToDayMode } = appColorSlice.actions;
-export default appColorSlice.reducer;
+export const { switchLightMode, switchToDayMode } =
+  dayNightModeSlice.actions;
+export default dayNightModeSlice.reducer;

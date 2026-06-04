@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { persistReducer } from "redux-persist";
-import appColorSlice from "../reducers/appColorSlice";
+import dayNightModeSlice from "../reducers/dayNightModeSlice";
 import cartSlice from "../reducers/cartSlice";
 
 const cartPersistConfig = {
@@ -18,5 +18,5 @@ const appColorPersistConfig = {
 export const persistedCartSlice = persistReducer(cartPersistConfig, cartSlice);
 export const persistedAppColorSlice = persistReducer(
   appColorPersistConfig,
-  appColorSlice,
+  dayNightModeSlice,
 );

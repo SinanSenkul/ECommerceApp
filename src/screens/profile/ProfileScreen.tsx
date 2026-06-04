@@ -21,7 +21,7 @@ import { emptyItems } from "../../store/reducers/cartSlice";
 import {
   switchLightMode,
   switchToDayMode,
-} from "../../store/reducers/appColorSlice";
+} from "../../store/reducers/dayNightModeSlice";
 
 interface IProfileScreen {
   username?: string;
