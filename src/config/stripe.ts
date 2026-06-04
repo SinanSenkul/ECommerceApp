@@ -1,7 +1,9 @@
 export const stripeConfig = {
-  publishableKey: "pk_test_51TeUoxRZ8hw3GQPTnq6uOy71krwTdEcoNNrb88UUVkNDO99gRbHZf05jcvHnNHP0MvGph0F6nxWBFzxl1BHw6sLO00wvTCEWBw",
-  paymentSheetEndpoint: "http://192.168.1.34:4242/payment-sheet",
-  useStripePayments: true,
+  publishableKey:
+    process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ??
+    "pk_test_replace_with_your_key",
+  paymentSheetEndpoint: process.env.EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT ?? "",
+  useStripePayments: process.env.EXPO_PUBLIC_USE_STRIPE_PAYMENTS === "true",
   merchantDisplayName: "Smart E-Commerce",
 };
 
