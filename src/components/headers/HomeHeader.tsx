@@ -1,4 +1,5 @@
-import { Animated, StyleSheet, TouchableOpacity } from "react-native";
+import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import { AppColors } from "../../styles/colors";
 import { s, vs } from "react-native-size-matters";
@@ -10,8 +11,12 @@ import { RootState } from "../../store/store";
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
-const HomeHeader = () => {
-  const navigation = useNavigation();
+interface HomeHeaderProps {
+  showBackButton?: boolean;
+}
+
+const HomeHeader = ({ showBackButton = false }: HomeHeaderProps) => {
+  const navigation = useNavigation<any>();
 
    const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode
   const isNight = mode === "nightMode";
@@ -36,12 +41,28 @@ const HomeHeader = () => {
 
   return (
     <AnimatedSafeAreaView style={[styles.container, { backgroundColor }]}>
-      <TouchableOpacity onPress={() => navigation.navigate("MainAppBottomTabs")}>
-        <Animated.Image
-          source={images.appLogo}
-          style={[styles.logo, { tintColor }]}
-        />
-      </TouchableOpacity>
+      <View style={styles.headerContent}>
+        {showBackButton && (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={s(28)}
+              color={isNight ? AppColors.backgroundBlack : AppColors.white}
+            />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("MainAppBottomTabs")}
+        >
+          <Animated.Image
+            source={images.appLogo}
+            style={[styles.logo, { tintColor }]}
+          />
+        </TouchableOpacity>
+      </View>
     </AnimatedSafeAreaView>
   );
 };
@@ -54,6 +75,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: vs(10),
+  },
+  headerContent: {
+    alignItems: "center",
+    flexDirection: "row",
+    height: vs(40),
+    justifyContent: "center",
+    width: "100%",
+  },
+  backButton: {
+    height: vs(40),
+    justifyContent: "center",
+    left: s(16),
+    position: "absolute",
+    zIndex: 1,
   },
   logo: {
     height: vs(40),

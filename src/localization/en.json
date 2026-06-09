@@ -84,5 +84,6 @@
   "You can select up to 5 pictures": "You can select up to 5 pictures",
   "Photo access is required to select product pictures": "Photo access is required to select product pictures",
   "Please select at least one product picture": "Please select at least one product picture",
-  "Selected picture could not be loaded": "Selected picture could not be loaded"
+  "Selected picture could not be loaded": "Selected picture could not be loaded",
+  "No results for your search query.": "No results for your search query."
 }

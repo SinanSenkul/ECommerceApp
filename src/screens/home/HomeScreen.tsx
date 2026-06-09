@@ -1,8 +1,8 @@
 import { StyleSheet } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import AppSafeView from "../../components/views/AppSafeView";
-import HomeHeader from "../../components/headers/HomeHeader";
+import SearchBox from "../../components/inputs/SearchBox";
 import ProductCard from "../../components/cards/ProductCard";
 import { FlatList } from "react-native-gesture-handler";
 import { s, vs } from "react-native-size-matters";
@@ -13,11 +13,13 @@ import { getProductsData } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
 import { getAuth } from "firebase/auth";
 import { RootState } from "../../store/store";
+import ZeroItemSearch from "./ZeroItemSearch";
 
 const HomeScreen = () => {
   const { items } = useSelector((state: RootState) => state.cartSlice);
   const dispatch = useDispatch();
   const [products, setProducts] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState("");
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -25,6 +27,22 @@ const HomeScreen = () => {
     const data = await getProductsData();
     setProducts(data);
   };
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearchText = searchText.trim().toLowerCase();
+
+    if (!normalizedSearchText) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const productTitle = String(product.title ?? product.productName ?? "");
+      return productTitle.toLowerCase().includes(normalizedSearchText);
+    });
+  }, [products, searchText]);
+
+  const hasNoSearchResults =
+    searchText.trim().length > 0 && filteredProducts.length === 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -84,36 +102,40 @@ const HomeScreen = () => {
     <AppSafeView
       style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}
     >
-      <HomeHeader />
-      <FlatList
-        columnWrapperStyle={{
-          justifyContent: "space-between",
-          marginBottom: vs(5),
-          paddingHorizontal: s(3),
-        }}
-        contentContainerStyle={{ paddingBottom: 80 }}
-        numColumns={2}
-        data={products}
-        renderItem={({ item }) => (
-          <ProductCard
-            price={item.price}
-            title={item.title}
-            imageURL={item.imageURL ?? ""}
-            // onAddToCartPress={() => {
-            //   showMessage({
-            //     message: t("Added to Card"),
-            //     type: "success",
-            //     duration: 1000,
-            //     floating: true,
-            //     icon: "success",
-            //   });
-            //   dispatch(addItem(item));
-            // }}
-            onAddToCartPress={() => onAddtoCartHandler(item)}
-          />
-        )}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <SearchBox value={searchText} onChangeText={setSearchText} />
+      {hasNoSearchResults ? (
+        <ZeroItemSearch />
+      ) : (
+        <FlatList
+          columnWrapperStyle={{
+            justifyContent: "space-between",
+            marginBottom: vs(5),
+            paddingHorizontal: s(3),
+          }}
+          contentContainerStyle={{ paddingBottom: 80 }}
+          numColumns={2}
+          data={filteredProducts}
+          renderItem={({ item }) => (
+            <ProductCard
+              price={item.price}
+              title={item.title}
+              imageURL={item.imageURL ?? ""}
+              // onAddToCartPress={() => {
+              //   showMessage({
+              //     message: t("Added to Card"),
+              //     type: "success",
+              //     duration: 1000,
+              //     floating: true,
+              //     icon: "success",
+              //   });
+              //   dispatch(addItem(item));
+              // }}
+              onAddToCartPress={() => onAddtoCartHandler(item)}
+            />
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      )}
     </AppSafeView>
   );
 };

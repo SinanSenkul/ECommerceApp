@@ -84,5 +84,6 @@
   "You can select up to 5 pictures": "Puedes seleccionar hasta 5 fotos",
   "Photo access is required to select product pictures": "Se necesita acceso a fotos para seleccionar imágenes del producto",
   "Please select at least one product picture": "Selecciona al menos una foto del producto",
-  "Selected picture could not be loaded": "No se pudo cargar la foto seleccionada"
+  "Selected picture could not be loaded": "No se pudo cargar la foto seleccionada",
+  "No results for your search query.": "No hay resultados para tu busqueda."
 }
