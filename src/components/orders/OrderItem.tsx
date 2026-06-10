@@ -13,9 +13,18 @@ import { RootState } from "../../store/store";
 interface IOrderItem {
   totalPrice?: number;
   date?: Date | string;
+  status?: "ordered" | "shipped";
+  items?: Array<{
+    title?: string;
+  }>;
 }
 
-const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
+const OrderItem: FC<IOrderItem> = ({
+  totalPrice,
+  date,
+  status = "ordered",
+  items = [],
+}) => {
   const [dateStringified, setDateStringified] = useState(date);
   const { mode } = useSelector((state: RootState) => state.appColor);
   const isNight = mode === "nightMode";
@@ -33,6 +42,11 @@ const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
   }, []);
 
   const { t } = useTranslation(); //localization
+  const productName = items
+    .map((item) => item.title)
+    .filter(Boolean)
+    .join(", ");
+  const statusText = status === "shipped" ? t("Shipped") : t("Ordered");
 
   return (
     <View
@@ -52,6 +66,14 @@ const OrderItem: FC<IOrderItem> = ({ totalPrice, date }) => {
           { borderBottomColor: lightMode.separatorColor },
         ]}
       ></View>
+      {productName.length > 0 && (
+        <AppText style={styles.text}>
+          {t("Product:")} {productName}
+        </AppText>
+      )}
+      <AppText style={styles.text}>
+        {t("Status:")} {statusText}
+      </AppText>
       <AppText style={styles.text}>{t("Total Price:")} {totalPrice} ₺</AppText>
       {/* <AppText style={styles.text}>Date: {date?.toString()}</AppText> */}
       <AppText style={styles.text}>{t("Date:")} {dateStringified?.toString()}</AppText>

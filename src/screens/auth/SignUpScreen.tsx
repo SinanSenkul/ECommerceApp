@@ -1,5 +1,5 @@
 import { StyleSheet, Image, Alert, ScrollView } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
@@ -18,35 +18,35 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../store/reducers/userSlice";
-import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 import { LoggedIn } from "../../helpers/loggedIn";
 import { db } from "../../config/firebase";
 
-const schema = yup
-  .object({
-    firstName: yup.string().required(t("Name is required!")),
-    lastName: yup.string().required(t("Last name is required!")),
-    address: yup
-      .string()
-      .min(15, t("Address must be at least 15 characters long"))
-      .required(t("Detailed address is required!")),
-    emailAddress: yup
-      .string()
-      .email(t("This is not a valid email!"))
-      .required(t("Email is required!"))
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        t("Invalid email format"),
-      ),
-    password: yup
-      .string()
-      .required(t("Password is required!"))
-      .min(6, t("Password must be at least 6 characters long")),
-  })
-  .required();
+const createSchema = (translate: (key: string) => string) =>
+  yup
+    .object({
+      firstName: yup.string().required(translate("Name is required!")),
+      lastName: yup.string().required(translate("Last name is required!")),
+      address: yup
+        .string()
+        .min(15, translate("Address must be at least 15 characters long"))
+        .required(translate("Detailed address is required!")),
+      emailAddress: yup
+        .string()
+        .email(translate("This is not a valid email!"))
+        .required(translate("Email is required!"))
+        .matches(
+          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+          translate("Invalid email format"),
+        ),
+      password: yup
+        .string()
+        .required(translate("Password is required!"))
+        .min(6, translate("Password must be at least 6 characters long")),
+    })
+    .required();
 
-type formData = yup.InferType<typeof schema>;
+type formData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const resetToMainApp = (navigation: any) => {
   navigation.reset({
@@ -59,6 +59,7 @@ const SignUpScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization tool
+  const schema = useMemo(() => createSchema(t), [t]);
 
   const { control, handleSubmit } = useForm({
     resolver: yupResolver(schema),
@@ -118,6 +119,8 @@ const SignUpScreen = () => {
         message = t("Password is too weak (min 6 characters)");
       } else if (error.code === "auth/invalid-email") {
         message = t("Invalid email address");
+      } else if (error.code === "auth/network-request-failed") {
+        message = t("Network request failed");
       }
       showMessage({
         message: message,

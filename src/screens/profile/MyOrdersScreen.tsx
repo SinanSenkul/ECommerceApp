@@ -1,5 +1,5 @@
 import { FlatList, StyleSheet } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import OrderItem from "../../components/orders/OrderItem";
 import { getUserOrders } from "../../config/dataServices";
 import AppSafeView from "../../components/views/AppSafeView";
@@ -7,12 +7,39 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { AppColors } from "../../styles/colors";
 import HomeHeader from "../../components/headers/HomeHeader";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface OrderListItem {
   id: string;
   priceSum?: number;
   createDate?: Date | string;
+  createdAt?: {
+    seconds?: number;
+    nanoseconds?: number;
+  };
+  status?: "ordered" | "shipped";
+  items?: Array<{
+    title?: string;
+  }>;
 }
+
+const getOrderTime = (order: OrderListItem) => {
+  if (typeof order.createdAt?.seconds === "number") {
+    return (
+      order.createdAt.seconds * 1000 +
+      Math.floor((order.createdAt.nanoseconds ?? 0) / 1000000)
+    );
+  }
+
+  if (typeof order.createDate === "string") {
+    const [day, month, year] = order.createDate.split(".").map(Number);
+    if (day && month && year) {
+      return new Date(year, month - 1, day).getTime();
+    }
+  }
+
+  return 0;
+};
 
 const MyOrdersScreen = () => {
   const [orderList, setOrderList] = useState<OrderListItem[]>([]);
@@ -26,12 +53,18 @@ const MyOrdersScreen = () => {
 
   const getOrders = async () => {
     const res = await getUserOrders();
-    setOrderList((res ?? []) as OrderListItem[]);
+    const sortedOrders = ((res ?? []) as OrderListItem[]).sort(
+      (firstOrder, secondOrder) =>
+        getOrderTime(secondOrder) - getOrderTime(firstOrder),
+    );
+    setOrderList(sortedOrders);
   };
 
-  useEffect(() => {
-    getOrders();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      getOrders();
+    }, []),
+  );
 
   return (
     <AppSafeView
@@ -46,7 +79,12 @@ const MyOrdersScreen = () => {
           // console.log(JSON.stringify(item, null, 3));
 
           return (
-            <OrderItem totalPrice={item.priceSum} date={item.createDate} />
+            <OrderItem
+              totalPrice={item.priceSum}
+              date={item.createDate}
+              status={item.status}
+              items={item.items}
+            />
           );
         }}
       />

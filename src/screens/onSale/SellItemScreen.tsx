@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useNavigation } from "@react-navigation/native";
@@ -30,7 +30,6 @@ import { RootState } from "../../store/store";
 import { auth } from "../../config/firebase";
 import { addProductOnSale } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
-import { t } from "i18next";
 
 const MAX_IMAGE_COUNT = 5;
 
@@ -101,25 +100,29 @@ const prepareSelectedImage = async (
   };
 };
 
-const schema = yup
-  .object({
-    productName: yup.string().required("Product name is required"),
-    productPrice: yup
-      .string()
-      .required("Product price is required")
-      .matches(/^\d+(\.\d{1,2})?$/, "Enter a valid price"),
-    stockQuantity: yup
-      .string()
-      .required(t("Stock quantity is required"))
-      .matches(/^[1-9]\d*$/, t("Stock quantity must be at least 1")),
-  })
-  .required();
+const createSchema = (translate: (key: string) => string) =>
+  yup
+    .object({
+      productName: yup
+        .string()
+        .required(translate("Product name is required")),
+      productPrice: yup
+        .string()
+        .required(translate("Product price is required"))
+        .matches(/^\d+(\.\d{1,2})?$/, translate("Enter a valid price")),
+      stockQuantity: yup
+        .string()
+        .required(translate("Stock quantity is required"))
+        .matches(/^[1-9]\d*$/, translate("Stock quantity must be at least 1")),
+    })
+    .required();
 
-type FormData = yup.InferType<typeof schema>;
+type FormData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const SellItemScreen = () => {
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
+  const schema = useMemo(() => createSchema(t), [t]);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -231,7 +234,10 @@ const SellItemScreen = () => {
     } catch (error) {
       const errorText = getErrorText(error);
       console.log("sell item error: ", errorText, error);
-      Alert.alert(t("Product listing failed"), errorText);
+      Alert.alert(
+        t("Product listing failed"),
+        t("Product could not be listed. Please try again"),
+      );
       showMessage({
         message: t("Product listing failed"),
         type: "danger",

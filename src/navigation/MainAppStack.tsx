@@ -9,10 +9,14 @@ import CartScreen from "../screens/cart/CartScreen";
 import HomeScreen from "../screens/home/HomeScreen";
 import MyOrdersScreen from "../screens/profile/MyOrdersScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
+import ProfileInfo from "../screens/profile/ProfileInfo";
+import SaleNotificationScreen from "../screens/profile/SaleNotificationScreen";
 import LanguagesScreen from "../screens/language/LanguagesScreen";
 import { useTranslation } from "react-i18next";
 import DeleteUserScreen from "../screens/auth/DeleteUserScreen";
 import SellItemScreen from "../screens/onSale/SellItemScreen";
+import ItemsOnSaleScreen from "../screens/onSale/ItemsOnSaleScreen";
+import ProductDetail from "../screens/home/ProductDetail";
 
 const Stack = createStackNavigator();
 
@@ -35,9 +39,15 @@ export default function MainAppStack() {
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CartScreen" component={CartScreen} />
         <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
+        <Stack.Screen
+          name="ProductDetail"
+          component={ProductDetail}
+          options={{ presentation: "modal" }}
+        />
         <Stack.Screen name="LanguageScreen" component={LanguagesScreen} />
         <Stack.Screen name="DeleteUserScreen" component={DeleteUserScreen} />
         <Stack.Screen name="SellItemScreen" component={SellItemScreen} />
+        <Stack.Screen name="ItemsOnSaleScreen" component={ItemsOnSaleScreen} />
         <Stack.Screen
           name="MyOrdersScreen"
           component={MyOrdersScreen}
@@ -48,6 +58,11 @@ export default function MainAppStack() {
           // }}
         />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="ProfileInfoScreen" component={ProfileInfo} />
+        <Stack.Screen
+          name="SaleNotificationScreen"
+          component={SaleNotificationScreen}
+        />
       </Stack.Navigator>
     </AppSafeView>
   );

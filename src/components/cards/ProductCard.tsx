@@ -14,6 +14,7 @@ interface ProductCardProps {
   title: string;
   imageURL: string;
   onAddToCartPress: () => void;
+  onPress?: () => void;
 }
 
 const ProductCard: FC<ProductCardProps> = ({
@@ -21,6 +22,7 @@ const ProductCard: FC<ProductCardProps> = ({
   title,
   imageURL,
   onAddToCartPress,
+  onPress,
 }) => {
   const [imgSource, setImgSource] = useState(imageURL);
   const handleImageError = () => {
@@ -37,7 +39,9 @@ const ProductCard: FC<ProductCardProps> = ({
   };
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
       style={[
         styles.container,
         AppStyles.shadow,
@@ -47,7 +51,10 @@ const ProductCard: FC<ProductCardProps> = ({
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.addToCartButton}
-          onPress={onAddToCartPress}
+          onPress={(event) => {
+            event.stopPropagation();
+            onAddToCartPress();
+          }}
         >
           <Ionicons name="cart-outline" color={AppColors.white} size={s(15)} />
         </TouchableOpacity>
@@ -65,7 +72,7 @@ const ProductCard: FC<ProductCardProps> = ({
         </AppText>
         <AppText style={styles.priceText}>{price} ₺</AppText>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

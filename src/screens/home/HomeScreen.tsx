@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import React, { useCallback, useMemo, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import AppSafeView from "../../components/views/AppSafeView";
 import SearchBox from "../../components/inputs/SearchBox";
 import ProductCard from "../../components/cards/ProductCard";
@@ -18,6 +18,7 @@ import ZeroItemSearch from "./ZeroItemSearch";
 const HomeScreen = () => {
   const { items } = useSelector((state: RootState) => state.cartSlice);
   const dispatch = useDispatch();
+  const navigation = useNavigation<any>();
   const [products, setProducts] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
   const auth = getAuth();
@@ -61,6 +62,17 @@ const HomeScreen = () => {
 
   const onAddtoCartHandler = (item: any) => {
     if (user) {
+      if (item.sellerId === user.uid) {
+        showMessage({
+          message: t("You cannot add your own item to cart"),
+          type: "info",
+          duration: 1200,
+          floating: true,
+          icon: "info",
+        });
+        return;
+      }
+
       if (items.some((cartItem) => cartItem.id === item.id)) {
         showMessage({
           message: t("Item is already in your cart"),
@@ -130,6 +142,9 @@ const HomeScreen = () => {
               //   });
               //   dispatch(addItem(item));
               // }}
+              onPress={() =>
+                navigation.navigate("ProductDetail", { product: item })
+              }
               onAddToCartPress={() => onAddtoCartHandler(item)}
             />
           )}

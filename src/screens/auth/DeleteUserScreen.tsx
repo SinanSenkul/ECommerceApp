@@ -1,5 +1,5 @@
 import { StyleSheet, Image, Alert, Modal, View } from "react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
@@ -17,25 +17,26 @@ import { getAuth, deleteUser, signOut } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteUserData } from "../../store/reducers/userSlice";
-import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../store/store";
 
-const schema = yup
-  .object({
-    password: yup
-      .string()
-      .required(t("Password is required!"))
-      .min(6, t("Password must be at least 6 characters long")),
-  })
-  .required();
+const createSchema = (translate: (key: string) => string) =>
+  yup
+    .object({
+      password: yup
+        .string()
+        .required(translate("Password is required!"))
+        .min(6, translate("Password must be at least 6 characters long")),
+    })
+    .required();
 
-type formData = yup.InferType<typeof schema>;
+type formData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const DeleteUserScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const { t } = useTranslation(); //localization tool
+  const schema = useMemo(() => createSchema(t), [t]);
   const auth = getAuth();
   const user = auth.currentUser;
   const [modalVisible, setModalVisible] = useState(false);
@@ -141,7 +142,7 @@ const DeleteUserScreen = () => {
                 marginBottom: 16,
               }}
             >
-              Are you sure?
+              {t("Are you sure?")}
             </AppText>
 
             <AppText
@@ -150,9 +151,9 @@ const DeleteUserScreen = () => {
                 marginBottom: 24,
               }}
             >
-              This will permanently delete your account and all associated data.
+              {t("This will permanently delete your account and all associated data.")}
               {"\n"}
-              This action cannot be undone.
+              {t("This action cannot be undone.")}
             </AppText>
 
             {/* Confirm button triggers the actual deletion with password validation */}

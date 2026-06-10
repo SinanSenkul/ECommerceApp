@@ -93,12 +93,24 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         <HomeHeader />
         <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
           <ProfileSectionButton
+            title={t("Profile Information")}
+            onPress={() => navigation.navigate("ProfileInfoScreen")}
+          />
+          <ProfileSectionButton
             title={t("My Orders")}
             onPress={() => navigation.navigate("MyOrdersScreen")}
           />
           <ProfileSectionButton
             title={t("Sell Items")}
             onPress={() => navigation.navigate("SellItemScreen")}
+          />
+          <ProfileSectionButton
+            title={t("Your Items on Sale")}
+            onPress={() => navigation.navigate("ItemsOnSaleScreen")}
+          />
+          <ProfileSectionButton
+            title={t("Sale Notifications")}
+            onPress={() => navigation.navigate("SaleNotificationScreen")}
           />
           <ProfileSectionButton
             title={t("Language")}

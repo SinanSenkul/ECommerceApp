@@ -1,5 +1,5 @@
 import { StyleSheet, Image } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AppSafeView from "../../components/views/AppSafeView";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { images } from "../../constants/image-paths";
@@ -21,20 +21,19 @@ import { setUserData } from "../../store/reducers/userSlice";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
 import { AppFonts } from "../../styles/fonts";
-import { t } from "i18next";
 import { LoggedIn } from "../../helpers/loggedIn";
 import { RootState } from "../../store/store";
 import SignInAppButton from "../../components/buttons/SignInAppButton";
 import LaunchScreen from "./LaunchScreen";
 
-//validation
-const schema = yup
-  .object({
-    userName: yup.string().required(t("Username is required!")),
-    password: yup.string().required(t("Password is required!")),
-  })
-  .required();
-type formData = yup.InferType<typeof schema>;
+const createSchema = (translate: (key: string) => string) =>
+  yup
+    .object({
+      userName: yup.string().required(translate("Username is required!")),
+      password: yup.string().required(translate("Password is required!")),
+    })
+    .required();
+type formData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const getUserProfile = async (uid: string) => {
   try {
@@ -58,6 +57,7 @@ const SignInScreen = () => {
   const navigation = useNavigation<any>(); //navigation
   const dispatch = useDispatch(); //redux
   const { t } = useTranslation(); //localization
+  const schema = useMemo(() => createSchema(t), [t]);
   const [isAppLoading, setIsAppLoading] = useState(true);
 
   const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode 
@@ -110,14 +110,22 @@ const SignInScreen = () => {
       LoggedIn(); //local update
       resetToMainApp(navigation);
     } catch (error: any) {
-      let errorMessage = "";
-      if (error.code === t("auth/user-not-found")) {
+      let errorMessage = t("Sign-in failed");
+      if (error.code === "auth/user-not-found") {
         errorMessage = t("User not found");
-      } else if (error.code === t("auth/invalid-credential")) {
+      } else if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/wrong-password"
+      ) {
         errorMessage = t("Username or password is wrong");
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = t("Invalid email address");
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = t("Too many requests. Please try again later");
+      } else if (error.code === "auth/network-request-failed") {
+        errorMessage = t("Network request failed");
       } else {
-        errorMessage = `Error: ${error}`;
-        console.log(t("error code: "), error);
+        console.log("sign-in error: ", error);
       }
       showMessage({
         message: errorMessage,

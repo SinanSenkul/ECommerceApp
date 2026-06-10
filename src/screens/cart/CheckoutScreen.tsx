@@ -14,16 +14,19 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
-import { collection, doc, getDoc, runTransaction } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
+} from "firebase/firestore";
 import { auth, db } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  createMockPayment,
-  createStripePayment,
-} from "../../services/paymentService";
+import { createStripePayment } from "../../services/paymentService";
 import { useStripe } from "@stripe/stripe-react-native";
 import { isStripeConfigured, stripeConfig } from "../../config/stripe";
 
@@ -146,25 +149,26 @@ const CheckoutScreen = () => {
 
       setIsPaying(true);
 
-      const payment = isStripeConfigured
-        ? await createStripePayment({
-            amount: priceSum,
-            currency: "TRY",
-            itemIds: items.map((item) => item.id),
-            userId,
-            fullName: formData.fullName,
-            emailAddress: formData.emailAddress,
-            endpoint: stripeConfig.paymentSheetEndpoint,
-            merchantDisplayName: stripeConfig.merchantDisplayName,
-            initPaymentSheet,
-            presentPaymentSheet,
-          })
-        : await createMockPayment({
-            amount: priceSum,
-            currency: "TRY",
-            itemCount: items.length,
-            userId,
-          });
+      if (!isStripeConfigured) {
+        Alert.alert(
+          t("Payment failed"),
+          t("Payment system is not configured"),
+        );
+        return;
+      }
+
+      const payment = await createStripePayment({
+        amount: priceSum,
+        currency: "TRY",
+        itemIds: items.map((item) => item.id),
+        userId,
+        fullName: formData.fullName,
+        emailAddress: formData.emailAddress,
+        endpoint: stripeConfig.paymentSheetEndpoint,
+        merchantDisplayName: stripeConfig.merchantDisplayName,
+        initPaymentSheet,
+        presentPaymentSheet,
+      });
 
       const orderBody = {
         ...formData,
@@ -172,7 +176,9 @@ const CheckoutScreen = () => {
         priceSum,
         payment,
         paymentStatus: "paid",
+        status: "ordered",
         createDate: formatToDDMMYYYY(new Date()),
+        createdAt: serverTimestamp(),
       };
       const userOrderRef = doc(collection(doc(db, "users", userId), "orders"));
       const orderRef = doc(collection(db, "orders"));
@@ -199,6 +205,30 @@ const CheckoutScreen = () => {
           transaction.update(productRefs[index], {
             stockQuantity: currentStock - 1,
           });
+
+          const sellerId = productData?.sellerId;
+          if (typeof sellerId === "string" && sellerId.length > 0) {
+            const saleNotificationRef = doc(
+              collection(doc(db, "users", sellerId), "saleNotifications"),
+            );
+            const purchasedItem = items[index];
+            transaction.set(saleNotificationRef, {
+              sellerId,
+              buyerId: userId,
+              buyerName: formData.fullName,
+              buyerEmail: formData.emailAddress,
+              productId: String(purchasedItem.id),
+              productName:
+                productData?.productName ?? purchasedItem.title ?? "",
+              productPrice:
+                productData?.productPrice ?? purchasedItem.price ?? 0,
+              orderId: orderRef.id,
+              userOrderId: userOrderRef.id,
+              status: "unread",
+              createdAt: serverTimestamp(),
+              createDate: formatToDDMMYYYY(new Date()),
+            });
+          }
         });
 
         transaction.set(userOrderRef, orderBody);

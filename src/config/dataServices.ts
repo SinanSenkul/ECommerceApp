@@ -1,9 +1,14 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
+  query,
   serverTimestamp,
+  updateDoc,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { store } from "../store/store";
@@ -89,4 +94,116 @@ export const addProductOnSale = async ({
 
   const productOnSaleRef = collection(db, "products_onsale");
   return addDoc(productOnSaleRef, productOnSaleBody);
+};
+
+export const getSellerProductsOnSale = async () => {
+  try {
+    const sellerId = auth.currentUser?.uid;
+    if (!sellerId) {
+      return [];
+    }
+
+    const productsOnSaleRef = collection(db, "products_onsale");
+    const sellerProductsQuery = query(
+      productsOnSaleRef,
+      where("sellerId", "==", sellerId),
+    );
+    const querySnapshot = await getDocs(sellerProductsQuery);
+
+    return querySnapshot.docs.flatMap((doc) => {
+      const productData = doc.data();
+      if (
+        typeof productData.stockQuantity === "number" &&
+        productData.stockQuantity <= 0
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          id: doc.id,
+          title: productData.productName,
+          price: productData.productPrice,
+          imageURL: productData.productImage,
+          ...productData,
+        },
+      ];
+    });
+  } catch (error) {
+    console.error("error fetching seller products: ", error);
+    return [];
+  }
+};
+
+export const updateProductOnSalePrice = async (
+  productId: string,
+  productPrice: number,
+) => {
+  const productRef = doc(db, "products_onsale", productId);
+  return updateDoc(productRef, { productPrice });
+};
+
+export const deleteProductOnSale = async (productId: string) => {
+  const productRef = doc(db, "products_onsale", productId);
+  return deleteDoc(productRef);
+};
+
+export const getSellerSaleNotifications = async () => {
+  try {
+    const sellerId = auth.currentUser?.uid;
+    if (!sellerId) {
+      return [];
+    }
+
+    const saleNotificationsRef = collection(
+      doc(db, "users", sellerId),
+      "saleNotifications",
+    );
+    const querySnapshot = await getDocs(saleNotificationsRef);
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("error fetching sale notifications: ", error);
+    return [];
+  }
+};
+
+export const markSaleNotificationOrderAsShipped = async ({
+  notificationId,
+  buyerId,
+  userOrderId,
+  orderId,
+}: {
+  notificationId: string;
+  buyerId: string;
+  userOrderId: string;
+  orderId: string;
+}) => {
+  const sellerId = auth.currentUser?.uid;
+  if (!sellerId) {
+    throw new Error("Seller not found");
+  }
+
+  const batch = writeBatch(db);
+  const userOrderRef = doc(db, "users", buyerId, "orders", userOrderId);
+  const orderRef = doc(db, "orders", orderId);
+  const saleNotificationRef = doc(
+    db,
+    "users",
+    sellerId,
+    "saleNotifications",
+    notificationId,
+  );
+
+  batch.update(userOrderRef, { status: "shipped" });
+  batch.update(orderRef, { status: "shipped" });
+  batch.update(saleNotificationRef, {
+    status: "shipped",
+    shippedAt: serverTimestamp(),
+  });
+
+  return batch.commit();
 };

@@ -17,7 +17,7 @@ const LANGUAGES = {
 i18n.use(initReactI18next).init({
   resources: LANGUAGES,
   fallbackLng: "en",
-  dafaultNS: "translation", //NS: name space
+  defaultNS: "translation", //NS: name space
   ns: ["translation"],
   react: {
     useSuspense: false,
