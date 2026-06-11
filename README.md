@@ -72,12 +72,14 @@ Translations live in `src/localization`. The app uses English as the fallback la
 
 The app uses Stripe PaymentSheet. The mobile app needs a publishable key and a public HTTPS backend endpoint that creates PaymentSheet data.
 
+The current payment backend is deployed as a Render web service. The app calls the Render-hosted `/payment-sheet` endpoint during checkout, while the Stripe secret key stays only on the backend service.
+
 Required Expo public environment variables:
 
 ```env
 EXPO_PUBLIC_USE_STRIPE_PAYMENTS=true
 EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
-EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT=https://your-payment-server.example.com/payment-sheet
+EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT=https://your-render-service.onrender.com/payment-sheet
 ```
 
 For local testing, the repository includes `stripe-test-server`, a small Node/Express backend for Stripe test-mode PaymentIntents. Do not commit secret keys. Keep Stripe secret keys only in local or hosted backend environment variables.
@@ -131,6 +133,8 @@ PORT=4242
 ```
 
 For real device testing or App Store review, the PaymentSheet endpoint must be available over public HTTPS.
+
+For this project, Render is used to provide that public HTTPS endpoint for the Stripe test server.
 
 ## Firebase
 
