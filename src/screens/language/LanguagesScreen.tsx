@@ -23,26 +23,15 @@ const LanguageBottomSheet = () => {
   );
 
   const [languageChanged, setLanguageChanged] = useState(false);
-  // const [lngCode, setLngCode] = useState(languageCode);
   const [lngTitle, setLngTitle] = useState("");
   const { t, i18n } = useTranslation();
 
-  const handlePress = (title) => {
-    let code = "";
-    if (title === "English") {
-      code = "en";
-    } else if (title === "Türkçe") {
-      code = "tr";
-    } else {
-      code = "es";
-    }
+  const handlePress = (code: string, title: string) => {
     setLngTitle(title);
     setLanguageChanged(true);
-    dispatch(setLanguageCode(code)); //--> necessary?
-    storeLangCode(code); //locally
+    dispatch(setLanguageCode(code));
+    storeLangCode(code);
   };
-
-  console;
 
   const handleConfirm = () => {
     navigation.goBack();
@@ -59,7 +48,7 @@ const LanguageBottomSheet = () => {
       });
   };
 
-  const storeLangCode = async (code) => {
+  const storeLangCode = async (code: string) => {
     try {
       await AsyncStorage.setItem("lang-code", code);
     } catch (e) {
@@ -81,19 +70,14 @@ const LanguageBottomSheet = () => {
         <View style={styles.languageList}>
           {languages.map((lang) => (
             <Radio
-              key={lang.title}
+              key={lang.code}
               title={lang.title}
               selected={lang.code === i18n.language}
-              onPress={() => handlePress(lang.title)}
+              onPress={() => handlePress(lang.code, lang.title)}
             />
           ))}
         </View>
-        <AppButton
-          title={t("Done")}
-          onPress={() => {
-            handleConfirm();
-          }}
-        />
+        <AppButton title={t("Done")} onPress={handleConfirm} />
       </View>
     </AppSafeView>
   );
