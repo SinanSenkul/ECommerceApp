@@ -2,6 +2,7 @@
   "Welcome to Smart E-Commerce": "Benvenuto in Smart E-Commerce",
   "Login": "Accedi",
   "Sign Up": "Registrati",
+  "Log In or Sign Up": "Accedi o registrati",
   "Username is required!": "Il nome utente è obbligatorio!",
   "Password is required!": "La password è obbligatoria!",
   "This is not a valid email!": "Questa non è un'email valida!",
@@ -28,7 +29,12 @@
   "Create New Account": "Crea nuovo account",
   "Go to Sign In": "Vai all'accesso",
   "hey_profile": "Ciao, {{userName}}",
-  "common": { "messages": { "profileGreeting": "Ciao, {{userName}}", "langChanged": "Lingua cambiata in {{language}}" } },
+  "common": {
+    "messages": {
+      "profileGreeting": "Ciao, {{userName}}",
+      "langChanged": "Lingua cambiata in {{language}}"
+    }
+  },
   "Pay": "Paga",
   "Delete": "Elimina",
   "Item Price": "Prezzo articolo",
@@ -87,6 +93,7 @@
   "Product Details": "Dettagli prodotto",
   "Product Price": "Prezzo prodotto",
   "Price:": "Prezzo:",
+  "New Price:": "Nuovo prezzo:",
   "Seller:": "Venditore:",
   "Stock:": "Disponibilità:",
   "Add to Cart": "Aggiungi al carrello",
@@ -109,14 +116,17 @@
   "Your Items on Sale": "I tuoi articoli in vendita",
   "Manage Your Sale Items": "Gestisci articoli in vendita",
   "Sale Notifications": "Notifiche di vendita",
+  "Orders Waiting Approval": "Ordini in attesa di approvazione",
   "Sale Alert Message": "{{buyerName}} ha comprato {{productName}}.",
   "Order marked as shipped": "Ordine segnato come spedito",
+  "Approve Order": "Approva ordine",
   "Order update failed": "Aggiornamento ordine non riuscito",
   "Buyer": "Acquirente",
   "Buyer:": "Acquirente:",
   "Email:": "Email:",
   "Product": "Prodotto",
   "You do not have any sale notifications": "Non hai notifiche di vendita",
+  "You do not have any orders waiting approval": "Non hai ordini in attesa di approvazione",
   "You do not have any items on sale": "Non hai articoli in vendita",
   "Save": "Salva",
   "Saving": "Salvataggio",
@@ -139,5 +149,8 @@
   "Delete My Account": "Elimina il mio account",
   "Delete Account": "Elimina account",
   "Deletion failed": "Eliminazione non riuscita",
-  "Account deleted successfully!": "Account eliminato con successo!"
+  "Account deleted successfully!": "Account eliminato con successo!",
+  "You must sign up to add it to your card": "Devi accedere per aggiungerlo al carrello",
+  "Account created successfully! Please verify your email before buying or selling.": "Account creato con successo! Verifica la tua email prima di comprare o vendere.",
+  "Please verify your email before continuing": "Verifica la tua email prima di continuare"
 }

@@ -28,6 +28,7 @@ import {
   updateProductOnSalePrice,
 } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 interface SaleItem {
   id: string;
@@ -64,6 +65,12 @@ const ItemsOnSaleScreen = () => {
   const loadItems = async () => {
     try {
       setIsLoading(true);
+      const verifiedUser = await requireVerifiedUser(t);
+      if (!verifiedUser) {
+        setItems([]);
+        setPriceInputs({});
+        return;
+      }
       const sellerItems = (await getSellerProductsOnSale()) as SaleItem[];
       setItems(sellerItems);
       setPriceInputs(
@@ -86,6 +93,11 @@ const ItemsOnSaleScreen = () => {
   );
 
   const savePrice = async (item: SaleItem) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
+      return;
+    }
+
     const priceText = priceInputs[item.id]?.trim() ?? "";
     if (!isValidPrice(priceText)) {
       showMessage({
@@ -198,7 +210,7 @@ const ItemsOnSaleScreen = () => {
             <AppText
               style={[styles.priceLabel, { color: lightMode.mutedTextColor }]}
             >
-              {t("Price:")}
+              {t("New Price:")}
             </AppText>
             <TextInput
               value={priceInputs[item.id] ?? ""}
@@ -312,7 +324,7 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    columnGap: s(8),
+    columnGap: s(4),
   },
   priceLabel: {
     fontFamily: AppFonts.Medium,

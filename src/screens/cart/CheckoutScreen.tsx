@@ -25,14 +25,13 @@ import { auth, db } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createStripePayment } from "../../services/paymentService";
 import { useStripe } from "@stripe/stripe-react-native";
 import { isStripeConfigured, stripeConfig } from "../../config/stripe";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 const CheckoutScreen = () => {
   const { t } = useTranslation();
-  const [userId, setuserId] = useState(auth.currentUser?.uid ?? "");
   const [isPaying, setIsPaying] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
@@ -43,18 +42,6 @@ const CheckoutScreen = () => {
     textColor: isNight ? AppColors.white : AppColors.black,
     inputContainerBG: isNight ? AppColors.inkBlack : AppColors.backgroundWhite,
   };
-
-  const getUserId = async () => {
-    let userDataStringified = await AsyncStorage.getItem("user-data");
-    if (userDataStringified) {
-      let userDataObj = JSON.parse(userDataStringified);
-      setuserId(userDataObj.uid);
-    }
-  };
-
-  useEffect(() => {
-    getUserId();
-  }, []);
 
   const schema = yup
     .object({
@@ -95,7 +82,7 @@ const CheckoutScreen = () => {
 
   useEffect(() => {
     const loadUserProfile = async () => {
-      const uid = auth.currentUser?.uid || userId;
+      const uid = auth.currentUser?.uid;
       if (!uid) {
         return;
       }
@@ -125,7 +112,7 @@ const CheckoutScreen = () => {
     };
 
     loadUserProfile();
-  }, [reset, user?.email, userId]);
+  }, [reset, user?.email]);
 
   const saveOrder = async (formData: formData) => {
     function formatToDDMMYYYY(date: Date): string {
@@ -137,7 +124,13 @@ const CheckoutScreen = () => {
     }
 
     try {
-      if (!userId) {
+      const verifiedUser = await requireVerifiedUser(t);
+      if (!verifiedUser) {
+        return;
+      }
+      const checkoutUserId = verifiedUser.uid;
+
+      if (!checkoutUserId) {
         Alert.alert(t("Sign-up failed"), t("User not found"));
         return;
       }
@@ -161,7 +154,7 @@ const CheckoutScreen = () => {
         amount: priceSum,
         currency: "TRY",
         itemIds: items.map((item) => item.id),
-        userId,
+        userId: checkoutUserId,
         fullName: formData.fullName,
         emailAddress: formData.emailAddress,
         endpoint: stripeConfig.paymentSheetEndpoint,
@@ -180,7 +173,9 @@ const CheckoutScreen = () => {
         createDate: formatToDDMMYYYY(new Date()),
         createdAt: serverTimestamp(),
       };
-      const userOrderRef = doc(collection(doc(db, "users", userId), "orders"));
+      const userOrderRef = doc(
+        collection(doc(db, "users", checkoutUserId), "orders"),
+      );
       const orderRef = doc(collection(db, "orders"));
 
       await runTransaction(db, async (transaction) => {
@@ -214,7 +209,7 @@ const CheckoutScreen = () => {
             const purchasedItem = items[index];
             transaction.set(saleNotificationRef, {
               sellerId,
-              buyerId: userId,
+              buyerId: checkoutUserId,
               buyerName: formData.fullName,
               buyerEmail: formData.emailAddress,
               productId: String(purchasedItem.id),

@@ -13,15 +13,12 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../config/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserData } from "../../store/reducers/userSlice";
 import { emptyItems } from "../../store/reducers/cartSlice";
 import { useTranslation } from "react-i18next";
 import { AppFonts } from "../../styles/fonts";
-import { LoggedIn } from "../../helpers/loggedIn";
 import { RootState } from "../../store/store";
 import SignInAppButton from "../../components/buttons/SignInAppButton";
 import LaunchScreen from "./LaunchScreen";
@@ -34,16 +31,6 @@ const createSchema = (translate: (key: string) => string) =>
     })
     .required();
 type formData = yup.InferType<ReturnType<typeof createSchema>>;
-
-const getUserProfile = async (uid: string) => {
-  try {
-    const userDoc = await getDoc(doc(db, "users", uid));
-    return userDoc.data();
-  } catch (error) {
-    console.log("user profile could not be fetched: ", error);
-    return undefined;
-  }
-};
 
 const resetToMainApp = (navigation: any) => {
   navigation.reset({
@@ -76,13 +63,6 @@ const SignInScreen = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const userProfile = await getUserProfile(currentUser.uid);
-        const userDataObj = {
-          uid: currentUser.uid,
-          ...(userProfile ?? {}),
-        };
-        dispatch(setUserData(userDataObj));
-        LoggedIn();
         resetToMainApp(navigation);
         return;
       }
@@ -95,19 +75,12 @@ const SignInScreen = () => {
 
   const signIn = async (data: formData) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
         data.userName,
         data.password,
       );
-      const userProfile = await getUserProfile(userCredential.user.uid);
-      const userDataObj = {
-        uid: userCredential.user.uid,
-        ...(userProfile ?? {}),
-      };
       dispatch(emptyItems());
-      dispatch(setUserData(userDataObj)); // we get the user data from db rather than reducer currently
-      LoggedIn(); //local update
       resetToMainApp(navigation);
     } catch (error: any) {
       let errorMessage = t("Sign-in failed");

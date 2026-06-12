@@ -27,9 +27,9 @@ import { AppColors } from "../../styles/colors";
 import { AppFonts } from "../../styles/fonts";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { RootState } from "../../store/store";
-import { auth } from "../../config/firebase";
 import { addProductOnSale } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 const MAX_IMAGE_COUNT = 5;
 
@@ -203,6 +203,11 @@ const SellItemScreen = () => {
   };
 
   const submitProduct = async (data: FormData) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
+      return;
+    }
+
     if (selectedImages.length === 0) {
       Alert.alert(t("Please select at least one product picture"));
       return;
@@ -217,7 +222,7 @@ const SellItemScreen = () => {
         productPrice: Number(data.productPrice),
         stockQuantity: Number(data.stockQuantity),
         productImages,
-        sellerId: auth.currentUser?.uid,
+        sellerId: verifiedUser.uid,
       });
 
       reset();

@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { s, vs } from "react-native-size-matters";
 import AppSafeView from "../../components/views/AppSafeView";
 import HomeHeader from "../../components/headers/HomeHeader";
@@ -19,12 +19,12 @@ import AppText from "../../components/texts/AppText";
 import AppButton from "../../components/buttons/AppButton";
 import AppTextInputController from "../../components/inputs/AppTextInputController";
 import { auth, db } from "../../config/firebase";
-import { setUserData } from "../../store/reducers/userSlice";
 import { RootState } from "../../store/store";
 import { AppColors } from "../../styles/colors";
 import { AppFonts } from "../../styles/fonts";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 const createSchema = (translate: (key: string) => string) =>
   yup
@@ -77,14 +77,10 @@ interface UserProfile {
 
 const ProfileInfo = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const schema = useMemo(() => createSchema(t), [t]);
   const [isSaving, setIsSaving] = useState(false);
   const user = auth.currentUser;
-  const userData = useSelector(
-    (state: RootState) => state.userSlice.userData,
-  ) as UserProfile;
   const { mode } = useSelector((state: RootState) => state.appColor);
   const isNight = mode === "nightMode";
   const lightMode = {
@@ -98,9 +94,9 @@ const ProfileInfo = () => {
   const { control, handleSubmit, reset } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      firstName: userData.firstName ?? "",
-      lastName: userData.lastName ?? "",
-      address: userData.address ?? "",
+      firstName: "",
+      lastName: "",
+      address: "",
       currentPassword: "",
       newPassword: "",
     },
@@ -108,7 +104,7 @@ const ProfileInfo = () => {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const uid = user?.uid ?? userData.uid;
+      const uid = user?.uid;
       if (!uid) {
         return;
       }
@@ -117,9 +113,9 @@ const ProfileInfo = () => {
         const userDoc = await getDoc(doc(db, "users", uid));
         const profile = userDoc.data() as UserProfile | undefined;
         reset({
-          firstName: profile?.firstName ?? userData.firstName ?? "",
-          lastName: profile?.lastName ?? userData.lastName ?? "",
-          address: profile?.address ?? userData.address ?? "",
+          firstName: profile?.firstName ?? "",
+          lastName: profile?.lastName ?? "",
+          address: profile?.address ?? "",
           currentPassword: "",
           newPassword: "",
         });
@@ -129,9 +125,14 @@ const ProfileInfo = () => {
     };
 
     loadProfile();
-  }, [reset, user?.uid, userData.address, userData.firstName, userData.lastName, userData.uid]);
+  }, [reset, user?.uid]);
 
   const saveProfile = async (data: FormData) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
+      return;
+    }
+
     if (!user) {
       showMessage({
         message: t("User not found"),
@@ -149,30 +150,23 @@ const ProfileInfo = () => {
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
         address: data.address.trim(),
-        email: user.email ?? userData.email ?? "",
+        email: verifiedUser.email ?? "",
       };
 
-      await updateDoc(doc(db, "users", user.uid), profileData);
+      await updateDoc(doc(db, "users", verifiedUser.uid), profileData);
 
       if (data.newPassword?.trim()) {
-        if (!user.email) {
+        if (!verifiedUser.email) {
           throw new Error("Missing user email");
         }
 
         const credential = EmailAuthProvider.credential(
-          user.email,
+          verifiedUser.email,
           data.currentPassword ?? "",
         );
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, data.newPassword.trim());
+        await reauthenticateWithCredential(verifiedUser, credential);
+        await updatePassword(verifiedUser, data.newPassword.trim());
       }
-
-      dispatch(
-        setUserData({
-          uid: user.uid,
-          ...profileData,
-        }),
-      );
 
       reset({
         ...profileData,

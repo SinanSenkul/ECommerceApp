@@ -1,7 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import cartSlice from "./reducers/cartSlice";
-import userSlice from "./reducers/userSlice";
-import languageSlice from "./reducers/languageSlice";
 import {
   persistedAppColorSlice,
   persistedCartSlice,
@@ -19,8 +17,6 @@ import {
 export const store = configureStore({
   reducer: {
     cartSlice: persistedCartSlice,
-    userSlice,
-    languageSlice,
     appColor: persistedAppColorSlice,
   },
   middleware: (getDefaultMiddleware) =>

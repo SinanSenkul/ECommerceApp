@@ -8,6 +8,8 @@ import { RootState } from "../../store/store";
 import { AppColors } from "../../styles/colors";
 import HomeHeader from "../../components/headers/HomeHeader";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 interface OrderListItem {
   id: string;
@@ -42,6 +44,7 @@ const getOrderTime = (order: OrderListItem) => {
 };
 
 const MyOrdersScreen = () => {
+  const { t } = useTranslation();
   const [orderList, setOrderList] = useState<OrderListItem[]>([]);
   const { mode } = useSelector((state: RootState) => state.appColor);
   const isNight = mode === "nightMode";
@@ -52,6 +55,12 @@ const MyOrdersScreen = () => {
   };
 
   const getOrders = async () => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
+      setOrderList([]);
+      return;
+    }
+
     const res = await getUserOrders();
     const sortedOrders = ((res ?? []) as OrderListItem[]).sort(
       (firstOrder, secondOrder) =>

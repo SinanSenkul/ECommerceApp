@@ -15,8 +15,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 // import { auth } from "../../config/firebase";
 import { getAuth, deleteUser, signOut } from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteUserData } from "../../store/reducers/userSlice";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../store/store";
 
@@ -33,7 +32,6 @@ const createSchema = (translate: (key: string) => string) =>
 type formData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const DeleteUserScreen = () => {
-  const dispatch = useDispatch();
   const navigation = useNavigation();
   const { t } = useTranslation(); //localization tool
   const schema = useMemo(() => createSchema(t), [t]);
@@ -81,7 +79,6 @@ const DeleteUserScreen = () => {
       await signOut(auth);
       deleteUser(user)
         .then(() => {
-          dispatch(deleteUserData());
           showMessage({
             message: t("Account deleted successfully!"),
             type: "success",

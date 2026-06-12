@@ -15,6 +15,7 @@ import { deleteItem } from "../../store/reducers/cartSlice";
 import { fee, tax } from "../../constants/constants";
 import { AppColors } from "../../styles/colors";
 import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 const CartScreen = () => {
   const navigation = useNavigation();
@@ -33,6 +34,16 @@ const CartScreen = () => {
 
   const dispatch = useDispatch();
   const { t } = useTranslation(); //localization
+  const goToCheckout = async () => {
+    if (sum <= 0) {
+      return;
+    }
+
+    const verifiedUser = await requireVerifiedUser(t);
+    if (verifiedUser) {
+      navigation.navigate("CheckoutScreen");
+    }
+  };
 
   return (
     <AppSafeView
@@ -64,9 +75,7 @@ const CartScreen = () => {
             <TotalsView price={price} sum={sum} />
             <AppButton
               title={t("Pay")}
-              onPress={() =>
-                sum > 0 ? navigation.navigate("CheckoutScreen") : null
-              }
+              onPress={goToCheckout}
               style={
                 sum > 0 ? styles.payButtonActive : styles.payButtonInactive
               }

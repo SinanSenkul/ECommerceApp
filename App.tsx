@@ -8,7 +8,6 @@ import { persistor, store } from "./src/store/store";
 import { Provider } from "react-redux";
 import i18n from "./src/localization/i18n";
 import { I18nextProvider } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PersistGate } from "redux-persist/integration/react";
 import { getLocales } from "expo-localization";
 import { StripeProvider } from "@stripe/stripe-react-native";
@@ -19,21 +18,6 @@ export default function App() {
     "Nunito-Bold": require("./src/assets/fonts/Nunito-Bold.ttf"),
     "Nunito-Medium": require("./src/assets/fonts/Nunito-Medium.ttf"),
   });
-
-  async function loadAndSetLanguage() {
-    try {
-      const storedLang = await AsyncStorage.getItem("lang-code");
-      if (storedLang) {
-        await i18n.changeLanguage(storedLang);
-      } else {
-        console.log("No stored language, using default");
-        await i18n.changeLanguage("en"); // Or your default
-      }
-    } catch (error) {
-      console.error("Error loading language in localstorage:", error);
-      await i18n.changeLanguage("en"); // Fallback on error
-    }
-  }
 
   async function getDeviceLanguage() {
     try {
@@ -46,7 +30,6 @@ export default function App() {
   }
 
   useEffect(() => {
-    //loadAndSetLanguage();
     getDeviceLanguage();
   }, []);
 

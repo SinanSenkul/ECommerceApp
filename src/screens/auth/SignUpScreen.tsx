@@ -13,13 +13,13 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { auth } from "../../config/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
-import { useDispatch } from "react-redux";
-import { setUserData } from "../../store/reducers/userSlice";
 import { useTranslation } from "react-i18next";
-import { LoggedIn } from "../../helpers/loggedIn";
 import { db } from "../../config/firebase";
 
 const createSchema = (translate: (key: string) => string) =>
@@ -56,7 +56,6 @@ const resetToMainApp = (navigation: any) => {
 };
 
 const SignUpScreen = () => {
-  const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization tool
   const schema = useMemo(() => createSchema(t), [t]);
@@ -83,28 +82,23 @@ const SignUpScreen = () => {
         data.emailAddress.trim(),
         data.password,
       );
+      await sendEmailVerification(userCredential.user);
       const userProfile = {
         uid: userCredential.user.uid,
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
         address: data.address.trim(),
         email: data.emailAddress.trim(),
+        emailVerified: userCredential.user.emailVerified,
         createdAt: serverTimestamp(),
       };
       await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
-      const userDataObj = {
-        uid: userCredential.user.uid,
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        address: data.address.trim(),
-        email: data.emailAddress.trim(),
-      };
-      LoggedIn();
-      dispatch(setUserData(userDataObj));
       showMessage({
-        message: t("Account created successfully!"),
+        message: t(
+          "Account created successfully! Please verify your email before buying or selling.",
+        ),
         type: "success",
-        duration: 1000,
+        duration: 2500,
         floating: true,
         icon: "success",
         position: "top",

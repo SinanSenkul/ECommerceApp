@@ -7,11 +7,10 @@ import AppSafeView from "../components/views/AppSafeView";
 import CheckoutScreen from "../screens/cart/CheckoutScreen";
 import CartScreen from "../screens/cart/CartScreen";
 import HomeScreen from "../screens/home/HomeScreen";
-import MyOrdersScreen from "../screens/profile/MyOrdersScreen";
+import MyOrdersScreen from "../screens/orders/MyOrdersScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import ProfileInfo from "../screens/profile/ProfileInfo";
-import SaleNotificationScreen from "../screens/profile/SaleNotificationScreen";
-import LanguagesScreen from "../screens/language/LanguagesScreen";
+import OrderApprovalScreen from "../screens/orders/OrderApprovalScreen";
 import { useTranslation } from "react-i18next";
 import DeleteUserScreen from "../screens/auth/DeleteUserScreen";
 import SellItemScreen from "../screens/onSale/SellItemScreen";
@@ -44,7 +43,6 @@ export default function MainAppStack() {
           component={ProductDetail}
           options={{ presentation: "modal" }}
         />
-        <Stack.Screen name="LanguageScreen" component={LanguagesScreen} />
         <Stack.Screen name="DeleteUserScreen" component={DeleteUserScreen} />
         <Stack.Screen name="SellItemScreen" component={SellItemScreen} />
         <Stack.Screen name="ItemsOnSaleScreen" component={ItemsOnSaleScreen} />
@@ -60,8 +58,8 @@ export default function MainAppStack() {
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         <Stack.Screen name="ProfileInfoScreen" component={ProfileInfo} />
         <Stack.Screen
-          name="SaleNotificationScreen"
-          component={SaleNotificationScreen}
+          name="OrderApprovalScreen"
+          component={OrderApprovalScreen}
         />
       </Stack.Navigator>
     </AppSafeView>

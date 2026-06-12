@@ -11,7 +11,6 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { store } from "../store/store";
 
 const getProductsData = async () => {
   try {
@@ -46,10 +45,7 @@ export { getProductsData };
 
 export const getUserOrders = async () => {
   try {
-    const userData = store.getState().userSlice.userData as { uid?: string };
-    const userIdFromGlobal = userData.uid;
-    const userIdFromFirebase = auth.currentUser?.uid;
-    const userId = userIdFromFirebase || userIdFromGlobal;
+    const userId = auth.currentUser?.uid;
     if (!userId) {
       return [];
     }
@@ -161,10 +157,19 @@ export const getSellerSaleNotifications = async () => {
     );
     const querySnapshot = await getDocs(saleNotificationsRef);
 
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    return querySnapshot.docs.flatMap((doc) => {
+      const notificationData = doc.data();
+      if (notificationData.status === "shipped") {
+        return [];
+      }
+
+      return [
+        {
+          id: doc.id,
+          ...notificationData,
+        },
+      ];
+    });
   } catch (error) {
     console.error("error fetching sale notifications: ", error);
     return [];
@@ -200,10 +205,7 @@ export const markSaleNotificationOrderAsShipped = async ({
 
   batch.update(userOrderRef, { status: "shipped" });
   batch.update(orderRef, { status: "shipped" });
-  batch.update(saleNotificationRef, {
-    status: "shipped",
-    shippedAt: serverTimestamp(),
-  });
+  batch.delete(saleNotificationRef);
 
   return batch.commit();
 };

@@ -11,9 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/reducers/cartSlice";
 import { getProductsData } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
-import { getAuth } from "firebase/auth";
 import { RootState } from "../../store/store";
 import ZeroItemSearch from "./ZeroItemSearch";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 const HomeScreen = () => {
   const { items } = useSelector((state: RootState) => state.cartSlice);
@@ -21,8 +21,6 @@ const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const [products, setProducts] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
-  const auth = getAuth();
-  const user = auth.currentUser;
 
   const fetchData = async () => {
     const data = await getProductsData();
@@ -60,9 +58,10 @@ const HomeScreen = () => {
     textColor: isNight ? "#FFFFFF" : "#121212",
   };
 
-  const onAddtoCartHandler = (item: any) => {
-    if (user) {
-      if (item.sellerId === user.uid) {
+  const onAddtoCartHandler = async (item: any) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (verifiedUser) {
+      if (item.sellerId === verifiedUser.uid) {
         showMessage({
           message: t("You cannot add your own item to cart"),
           type: "info",
@@ -99,14 +98,6 @@ const HomeScreen = () => {
           imageURL: item.imageURL,
         }),
       );
-    } else {
-      showMessage({
-        message: t("You must sign up to add it to your card"),
-        type: "none",
-        duration: 2000,
-        floating: true,
-        icon: "success",
-      });
     }
   };
 

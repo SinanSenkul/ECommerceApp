@@ -23,6 +23,7 @@ import { addItem } from "../../store/reducers/cartSlice";
 import { RootState } from "../../store/store";
 import { useTranslation } from "react-i18next";
 import { db } from "../../config/firebase";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 interface ProductDetailRouteParams {
   product?: {
@@ -72,15 +73,9 @@ const ProductDetail = () => {
     buttonTextColor: isNight ? AppColors.black : AppColors.white,
   };
 
-  const addToCart = () => {
-    if (!user) {
-      showMessage({
-        message: t("You must sign up to add it to your card"),
-        type: "none",
-        duration: 2000,
-        floating: true,
-        icon: "success",
-      });
+  const addToCart = async () => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
       return;
     }
 
@@ -88,7 +83,7 @@ const ProductDetail = () => {
       return;
     }
 
-    if (isOwnProduct) {
+    if (product?.sellerId === verifiedUser.uid) {
       showMessage({
         message: t("You cannot add your own item to cart"),
         type: "info",
@@ -216,40 +211,37 @@ const ProductDetail = () => {
         </View>
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          {
-            backgroundColor: lightMode.backgroundColor,
-            borderTopColor: lightMode.borderColor,
-          },
-        ]}
-      >
-        <TouchableOpacity
-          activeOpacity={0.85}
-          disabled={isOwnProduct}
-          onPress={addToCart}
+      {!isOwnProduct && (
+        <View
           style={[
-            styles.addToCartButton,
+            styles.footer,
             {
-              backgroundColor: isOwnProduct
-                ? AppColors.disabledGray
-                : lightMode.buttonBackground,
+              backgroundColor: lightMode.backgroundColor,
+              borderTopColor: lightMode.borderColor,
             },
           ]}
         >
-          <Ionicons
-            name="cart-outline"
-            size={s(20)}
-            color={lightMode.buttonTextColor}
-          />
-          <Text
-            style={[styles.addToCartText, { color: lightMode.buttonTextColor }]}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={addToCart}
+            style={[
+              styles.addToCartButton,
+              { backgroundColor: lightMode.buttonBackground },
+            ]}
           >
-            {isOwnProduct ? t("Your own item") : t("Add to Cart")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Ionicons
+              name="cart-outline"
+              size={s(20)}
+              color={lightMode.buttonTextColor}
+            />
+            <Text
+              style={[styles.addToCartText, { color: lightMode.buttonTextColor }]}
+            >
+              {t("Add to Cart")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </AppSafeView>
   );
 };

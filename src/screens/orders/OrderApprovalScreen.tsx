@@ -23,6 +23,7 @@ import {
   markSaleNotificationOrderAsShipped,
 } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 interface SaleNotification {
   id: string;
@@ -59,7 +60,7 @@ const getNotificationTime = (notification: SaleNotification) => {
   return 0;
 };
 
-const SaleNotificationScreen = () => {
+const OrderApprovalScreen = () => {
   const { t } = useTranslation();
   const [notifications, setNotifications] = useState<SaleNotification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,13 +81,20 @@ const SaleNotificationScreen = () => {
   const loadNotifications = async () => {
     try {
       setIsLoading(true);
+      const verifiedUser = await requireVerifiedUser(t);
+      if (!verifiedUser) {
+        setNotifications([]);
+        return;
+      }
       const saleNotifications =
         (await getSellerSaleNotifications()) as SaleNotification[];
-      const sortedNotifications = saleNotifications.sort(
-        (firstNotification, secondNotification) =>
-          getNotificationTime(secondNotification) -
-          getNotificationTime(firstNotification),
-      );
+      const sortedNotifications = saleNotifications
+        .filter((notification) => notification.status !== "shipped")
+        .sort(
+          (firstNotification, secondNotification) =>
+            getNotificationTime(secondNotification) -
+            getNotificationTime(firstNotification),
+        );
       setNotifications(sortedNotifications);
     } finally {
       setIsLoading(false);
@@ -100,6 +108,11 @@ const SaleNotificationScreen = () => {
   );
 
   const markAsShipped = async (notification: SaleNotification) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (!verifiedUser) {
+      return;
+    }
+
     if (
       !notification.buyerId ||
       !notification.userOrderId ||
@@ -124,10 +137,8 @@ const SaleNotificationScreen = () => {
         orderId: notification.orderId,
       });
       setNotifications((currentNotifications) =>
-        currentNotifications.map((currentNotification) =>
-          currentNotification.id === notification.id
-            ? { ...currentNotification, status: "shipped" }
-            : currentNotification,
+        currentNotifications.filter(
+          (currentNotification) => currentNotification.id !== notification.id,
         ),
       );
       showMessage({
@@ -172,24 +183,6 @@ const SaleNotificationScreen = () => {
             productName: item.productName || t("Product"),
           })}
         </AppText>
-        <TouchableOpacity
-          activeOpacity={0.75}
-          disabled={isShipped || isUpdating}
-          onPress={() => markAsShipped(item)}
-          style={[
-            styles.shipButton,
-            {
-              borderColor: isShipped ? AppColors.medGray : AppColors.primary,
-              opacity: isUpdating ? 0.5 : 1,
-            },
-          ]}
-        >
-          <Ionicons
-            name="checkmark-outline"
-            size={s(20)}
-            color={isShipped ? AppColors.medGray : AppColors.primary}
-          />
-        </TouchableOpacity>
       </View>
       <AppText style={styles.text}>
         {t("Buyer:")} {item.buyerName || "-"}
@@ -211,6 +204,34 @@ const SaleNotificationScreen = () => {
           {t("Date:")} {item.createDate}
         </AppText>
       )}
+      <View style={styles.shipButtonRow}>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          disabled={isShipped || isUpdating}
+          onPress={() => markAsShipped(item)}
+          style={[
+            styles.shipButton,
+            {
+              borderColor: isShipped ? AppColors.medGray : AppColors.primary,
+              opacity: isUpdating ? 0.5 : 1,
+            },
+          ]}
+        >
+          <Ionicons
+            name="checkmark-outline"
+            size={s(18)}
+            color={isShipped ? AppColors.medGray : AppColors.primary}
+          />
+          <AppText
+            style={[
+              styles.shipButtonText,
+              { color: isShipped ? AppColors.medGray : AppColors.primary },
+            ]}
+          >
+            {t("Approve Order")}
+          </AppText>
+        </TouchableOpacity>
+      </View>
     </View>
     );
   };
@@ -221,7 +242,7 @@ const SaleNotificationScreen = () => {
     >
       <HomeHeader showBackButton />
       <View style={styles.content}>
-        <AppText style={styles.title}>{t("Sale Notifications")}</AppText>
+        <AppText style={styles.title}>{t("Orders Waiting Approval")}</AppText>
         {isLoading ? (
           <ActivityIndicator
             size="large"
@@ -236,7 +257,7 @@ const SaleNotificationScreen = () => {
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <AppText style={styles.emptyText}>
-                {t("You do not have any sale notifications")}
+                {t("You do not have any orders waiting approval")}
               </AppText>
             }
           />
@@ -246,7 +267,7 @@ const SaleNotificationScreen = () => {
   );
 };
 
-export default SaleNotificationScreen;
+export default OrderApprovalScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -283,12 +304,22 @@ const styles = StyleSheet.create({
     fontSize: s(15),
   },
   shipButton: {
-    height: s(34),
-    width: s(34),
+    minHeight: vs(34),
     borderRadius: s(17),
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    columnGap: s(6),
+    paddingHorizontal: s(12),
+  },
+  shipButtonRow: {
+    alignItems: "center",
+    marginTop: vs(10),
+  },
+  shipButtonText: {
+    fontFamily: AppFonts.Bold,
+    fontSize: s(13),
   },
   text: {
     fontFamily: AppFonts.Medium,

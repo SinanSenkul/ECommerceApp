@@ -12,8 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { auth } from "../../config/firebase";
 import { useTranslation } from "react-i18next";
-import { deleteUserData } from "../../store/reducers/userSlice";
-import { signOut, getAuth } from "firebase/auth";
+import { onAuthStateChanged, signOut, getAuth, User } from "firebase/auth";
 import * as Linking from "expo-linking";
 import { Platform, Alert } from "react-native";
 import ProfileScreenUnsub from "./ProfileScreenUnsub";
@@ -22,6 +21,7 @@ import {
   switchLightMode,
   switchToDayMode,
 } from "../../store/reducers/dayNightModeSlice";
+import { requireVerifiedUser } from "../../helpers/authGuards";
 
 interface IProfileScreen {
   username?: string;
@@ -30,7 +30,7 @@ interface IProfileScreen {
 const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch(); //redux
-  const user = auth.currentUser;
+  const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
   const authInstance = getAuth();
 
   const { t } = useTranslation(); //localization
@@ -48,9 +48,13 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     dispatch(switchLightMode());
   };
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(authInstance, setCurrentUser);
+    return unsubscribe;
+  }, [authInstance]);
+
   const LoggedOut = async () => {
     try {
-      dispatch(deleteUserData());
       dispatch(emptyItems());
       dispatch(switchToDayMode());
       await signOut(authInstance);
@@ -78,7 +82,14 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     }
   };
 
-  if (!user) {
+  const navigateIfVerified = async (routeName: string) => {
+    const verifiedUser = await requireVerifiedUser(t);
+    if (verifiedUser) {
+      navigation.navigate(routeName);
+    }
+  };
+
+  if (!currentUser) {
     return <ProfileScreenUnsub />;
   }
 
@@ -94,27 +105,26 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
         <View style={{ paddingHorizontal: sharedStyles.paddingHorizontal }}>
           <ProfileSectionButton
             title={t("Profile Information")}
-            onPress={() => navigation.navigate("ProfileInfoScreen")}
+            onPress={() => navigateIfVerified("ProfileInfoScreen")}
           />
           <ProfileSectionButton
             title={t("My Orders")}
-            onPress={() => navigation.navigate("MyOrdersScreen")}
+            onPress={() => navigateIfVerified("MyOrdersScreen")}
           />
           <ProfileSectionButton
             title={t("Sell Items")}
-            onPress={() => navigation.navigate("SellItemScreen")}
+            onPress={() => navigateIfVerified("SellItemScreen")}
           />
           <ProfileSectionButton
             title={t("Your Items on Sale")}
-            onPress={() => navigation.navigate("ItemsOnSaleScreen")}
+            onPress={() => navigateIfVerified("ItemsOnSaleScreen")}
           />
           <ProfileSectionButton
-            title={t("Sale Notifications")}
-            onPress={() => navigation.navigate("SaleNotificationScreen")}
+            title={t("Orders Waiting Approval")}
+            onPress={() => navigateIfVerified("OrderApprovalScreen")}
           />
           <ProfileSectionButton
             title={t("Language")}
-            // onPress={() => navigation.navigate("LanguageScreen")}
             onPress={() => {
               openDeviceLanguageSettings();
             }}
@@ -122,9 +132,9 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
 
           <ProfileSectionButton
             title={t("Log Out")}
-            onPress={() => {
-              LoggedOut();
-              navigation.navigate("AuthStack");
+            onPress={async () => {
+              await LoggedOut();
+              navigation.navigate("HomeScreen");
             }}
           />
 
