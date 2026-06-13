@@ -157,10 +157,11 @@ const SellItemScreen = () => {
     let result: ImagePicker.ImagePickerResult;
     try {
       result = await ImagePicker.launchImageLibraryAsync({
-        allowsMultipleSelection: false,
+        allowsMultipleSelection: true,
         base64: true,
         mediaTypes: ["images"],
         quality: 1,
+        selectionLimit: remainingSlots,
       });
     } catch (error) {
       console.log("image picker failed: ", getErrorText(error), error);
@@ -172,15 +173,18 @@ const SellItemScreen = () => {
       return;
     }
 
-    const pickedImage = result.assets?.[0];
-    if (!pickedImage?.uri) {
+    const pickedImages = result.assets
+      ?.filter((asset) => Boolean(asset.uri))
+      .slice(0, remainingSlots);
+
+    if (!pickedImages?.length) {
       Alert.alert(t("Selected picture could not be loaded"));
       return;
     }
 
-    let preparedImage: SelectedImage;
+    let preparedImages: SelectedImage[];
     try {
-      preparedImage = await prepareSelectedImage(pickedImage);
+      preparedImages = await Promise.all(pickedImages.map(prepareSelectedImage));
     } catch (error) {
       console.log("image selection failed: ", getErrorText(error), error);
       Alert.alert(t("Selected picture could not be loaded"));
@@ -188,11 +192,14 @@ const SellItemScreen = () => {
     }
 
     setSelectedImages((currentImages) => {
-      if (currentImages.some((image) => image.originalUri === pickedImage.uri)) {
-        return currentImages;
-      }
+      const existingOriginalUris = new Set(
+        currentImages.map((image) => image.originalUri ?? image.uri),
+      );
+      const newImages = preparedImages.filter(
+        (image) => !existingOriginalUris.has(image.originalUri ?? image.uri),
+      );
 
-      return [...currentImages, preparedImage].slice(0, MAX_IMAGE_COUNT);
+      return [...currentImages, ...newImages].slice(0, MAX_IMAGE_COUNT);
     });
   };
 

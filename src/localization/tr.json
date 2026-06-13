@@ -56,6 +56,7 @@
   "Address too short!": "Adres çok kısa!",
   "Detailed address is required!": "Ayrıntılı adres zorunludur!",
   "My Orders": "Siparişlerim",
+  "You have no orders... Yet.": "Henüz siparişiniz yok.",
   "Profile Information": "Profil Bilgileri",
   "Change Password": "Şifre Değiştir",
   "Current Password": "Mevcut Şifre",
@@ -149,8 +150,13 @@
   "Delete My Account": "Hesabımı Sil",
   "Delete Account": "Hesabı Sil",
   "Deletion failed": "Silme işlemi başarısız",
+  "Deleting": "Siliniyor",
   "Account deleted successfully!": "Hesap başarıyla silindi!",
   "You must sign up to add it to your card": "Ürünü sepete eklemek için giriş yapmalısınız",
   "Account created successfully! Please verify your email before buying or selling.": "Hesabınız başarıyla oluşturuldu! Satın alma veya satış yapmadan önce lütfen e-posta adresinizi doğrulayın.",
-  "Please verify your email before continuing": "Devam etmeden önce lütfen e-posta adresinizi doğrulayın"
+  "Please verify your email before continuing": "Devam etmeden önce lütfen e-posta adresinizi doğrulayın",
+  "Send a new verification email to continue.": "Devam etmek için yeni bir doğrulama e-postası gönderin.",
+  "Resend verification email": "Doğrulama e-postasını tekrar gönder",
+  "Verification email sent": "Doğrulama e-postası gönderildi",
+  "Could not send verification email": "Doğrulama e-postası gönderilemedi"
 }

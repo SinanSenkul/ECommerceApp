@@ -71,22 +71,37 @@ export const createStripePayment = async ({
   initPaymentSheet,
   presentPaymentSheet,
 }: StripePaymentParams): Promise<PaymentResult> => {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      amount,
-      currency,
-      itemIds,
-      userId,
-      customer: {
-        name: fullName,
-        email: emailAddress,
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }),
-  });
+      body: JSON.stringify({
+        amount,
+        currency,
+        itemIds,
+        userId,
+        customer: {
+          name: fullName,
+          email: emailAddress,
+        },
+      }),
+    });
+  } catch (error) {
+    if (__DEV__) {
+      console.warn("Stripe test endpoint unavailable, using mock payment.", error);
+      return createMockPayment({
+        amount,
+        currency,
+        itemCount: itemIds.length,
+        userId,
+      });
+    }
+
+    throw error;
+  }
 
   if (!response.ok) {
     throw new Error("Stripe payment setup failed");

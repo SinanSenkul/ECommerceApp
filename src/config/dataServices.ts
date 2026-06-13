@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
@@ -16,8 +17,10 @@ const getProductsData = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "products_onsale"));
     const list: any[] = [];
-    querySnapshot.forEach((doc) => {
-      const productData = doc.data();
+    const sellerIds = new Set<string>();
+
+    querySnapshot.forEach((document) => {
+      const productData = document.data();
       if (
         typeof productData.stockQuantity === "number" &&
         productData.stockQuantity <= 0
@@ -26,15 +29,38 @@ const getProductsData = async () => {
       }
 
       const { createdAt, ...serializableProductData } = productData;
-      list.push({
-        id: doc.id,
+      const product: any = {
+        id: document.id,
         title: productData.productName,
         price: productData.productPrice,
         imageURL: productData.productImage,
         ...serializableProductData,
-      });
+      };
+
+      if (typeof product.sellerId === "string" && product.sellerId.length > 0) {
+        sellerIds.add(product.sellerId);
+      }
+
+      list.push(product);
     });
-    return list;
+
+    const activeSellerIds = new Set(
+      (
+        await Promise.all(
+          Array.from(sellerIds).map(async (sellerId) => {
+            const sellerDoc = await getDoc(doc(db, "users", sellerId));
+            return sellerDoc.exists() ? sellerId : null;
+          }),
+        )
+      ).filter((sellerId): sellerId is string => Boolean(sellerId)),
+    );
+
+    return list.filter(
+      (product) =>
+        typeof product.sellerId !== "string" ||
+        product.sellerId.length === 0 ||
+        activeSellerIds.has(product.sellerId),
+    );
   } catch (error) {
     console.error("Error fetching data: ", error);
     return [];
@@ -142,6 +168,24 @@ export const updateProductOnSalePrice = async (
 export const deleteProductOnSale = async (productId: string) => {
   const productRef = doc(db, "products_onsale", productId);
   return deleteDoc(productRef);
+};
+
+export const deleteUserPublicData = async (userId: string) => {
+  const productsOnSaleRef = collection(db, "products_onsale");
+  const userProductsQuery = query(
+    productsOnSaleRef,
+    where("sellerId", "==", userId),
+  );
+  const querySnapshot = await getDocs(userProductsQuery);
+  const batch = writeBatch(db);
+
+  querySnapshot.docs.forEach((productDoc) => {
+    batch.delete(productDoc.ref);
+  });
+
+  batch.delete(doc(db, "users", userId));
+
+  return batch.commit();
 };
 
 export const getSellerSaleNotifications = async () => {

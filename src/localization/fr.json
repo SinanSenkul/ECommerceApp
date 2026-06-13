@@ -56,6 +56,7 @@
   "Address too short!": "Adresse trop courte !",
   "Detailed address is required!": "Une adresse détaillée est requise !",
   "My Orders": "Mes commandes",
+  "You have no orders... Yet.": "Vous n'avez pas encore de commandes.",
   "Profile Information": "Informations du profil",
   "Change Password": "Changer le mot de passe",
   "Current Password": "Mot de passe actuel",
@@ -149,8 +150,13 @@
   "Delete My Account": "Supprimer mon compte",
   "Delete Account": "Supprimer le compte",
   "Deletion failed": "Suppression échouée",
+  "Deleting": "Suppression",
   "Account deleted successfully!": "Compte supprimé avec succès !",
   "You must sign up to add it to your card": "Vous devez vous connecter pour l'ajouter au panier",
   "Account created successfully! Please verify your email before buying or selling.": "Compte créé avec succès ! Veuillez vérifier votre e-mail avant d’acheter ou de vendre.",
-  "Please verify your email before continuing": "Veuillez vérifier votre e-mail avant de continuer"
+  "Please verify your email before continuing": "Veuillez vérifier votre e-mail avant de continuer",
+  "Send a new verification email to continue.": "Envoyez un nouvel e-mail de vérification pour continuer.",
+  "Resend verification email": "Renvoyer l’e-mail de vérification",
+  "Verification email sent": "E-mail de vérification envoyé",
+  "Could not send verification email": "Impossible d’envoyer l’e-mail de vérification"
 }

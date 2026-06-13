@@ -56,6 +56,7 @@
   "Address too short!": "Address too short!",
   "Detailed address is required!": "Detailed address is required!",
   "My Orders": "My Orders",
+  "You have no orders... Yet.": "You have no orders... Yet.",
   "Profile Information": "Profile Information",
   "Change Password": "Change Password",
   "Current Password": "Current Password",
@@ -149,8 +150,13 @@
   "Delete My Account": "Delete My Account",
   "Delete Account": "Delete Account",
   "Deletion failed": "Deletion failed",
+  "Deleting": "Deleting",
   "Account deleted successfully!": "Account deleted successfully!",
   "You must sign up to add it to your card": "You must sign up to add it to your cart",
   "Account created successfully! Please verify your email before buying or selling.": "Account created successfully! Please verify your email before buying or selling.",
-  "Please verify your email before continuing": "Please verify your email before continuing"
+  "Please verify your email before continuing": "Please verify your email before continuing",
+  "Send a new verification email to continue.": "Send a new verification email to continue.",
+  "Resend verification email": "Resend verification email",
+  "Verification email sent": "Verification email sent",
+  "Could not send verification email": "Could not send verification email"
 }

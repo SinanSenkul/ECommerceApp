@@ -56,6 +56,7 @@
   "Address too short!": "Адрес слишком короткий!",
   "Detailed address is required!": "Требуется подробный адрес!",
   "My Orders": "Мои заказы",
+  "You have no orders... Yet.": "У вас пока нет заказов.",
   "Profile Information": "Информация профиля",
   "Change Password": "Изменить пароль",
   "Current Password": "Текущий пароль",
@@ -149,8 +150,13 @@
   "Delete My Account": "Удалить мой аккаунт",
   "Delete Account": "Удалить аккаунт",
   "Deletion failed": "Удаление не удалось",
+  "Deleting": "Удаление",
   "Account deleted successfully!": "Аккаунт успешно удален!",
   "You must sign up to add it to your card": "Войдите в аккаунт, чтобы добавить товар в корзину",
   "Account created successfully! Please verify your email before buying or selling.": "Аккаунт успешно создан! Подтвердите электронную почту перед покупкой или продажей.",
-  "Please verify your email before continuing": "Подтвердите электронную почту, прежде чем продолжить"
+  "Please verify your email before continuing": "Подтвердите электронную почту, прежде чем продолжить",
+  "Send a new verification email to continue.": "Отправьте новое письмо для подтверждения, чтобы продолжить.",
+  "Resend verification email": "Отправить письмо повторно",
+  "Verification email sent": "Письмо для подтверждения отправлено",
+  "Could not send verification email": "Не удалось отправить письмо для подтверждения"
 }

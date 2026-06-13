@@ -10,6 +10,8 @@ import HomeHeader from "../../components/headers/HomeHeader";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import AppText from "../../components/texts/AppText";
+import { vs } from "react-native-size-matters";
 
 interface OrderListItem {
   id: string;
@@ -96,6 +98,11 @@ const MyOrdersScreen = () => {
             />
           );
         }}
+        ListEmptyComponent={
+          <AppText style={styles.emptyText}>
+            {t("You have no orders... Yet.")}
+          </AppText>
+        }
       />
     </AppSafeView>
   );
@@ -107,5 +114,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
+  },
+  emptyText: {
+    marginTop: vs(28),
+    textAlign: "center",
   },
 });

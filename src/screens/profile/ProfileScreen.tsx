@@ -1,12 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { FC, useEffect, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import HomeHeader from "../../components/headers/HomeHeader";
 import AppSafeView from "../../components/views/AppSafeView";
 import ProfileSectionButton from "../../components/buttons/ProfileSectionButton";
 import { sharedStyles } from "../../styles/sharedStyles";
-import AppText from "../../components/texts/AppText";
-import { s, vs } from "react-native-size-matters";
-import { useNavigation } from "@react-navigation/native";
+import { vs } from "react-native-size-matters";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import AppButton from "../../components/buttons/AppButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -22,6 +21,7 @@ import {
   switchToDayMode,
 } from "../../store/reducers/dayNightModeSlice";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { getSellerSaleNotifications } from "../../config/dataServices";
 
 interface IProfileScreen {
   username?: string;
@@ -31,6 +31,7 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch(); //redux
   const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
+  const [hasPendingSaleApproval, setHasPendingSaleApproval] = useState(false);
   const authInstance = getAuth();
 
   const { t } = useTranslation(); //localization
@@ -52,6 +53,31 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     const unsubscribe = onAuthStateChanged(authInstance, setCurrentUser);
     return unsubscribe;
   }, [authInstance]);
+
+  const loadPendingSaleApprovalState = useCallback(async () => {
+    if (!authInstance.currentUser) {
+      setHasPendingSaleApproval(false);
+      return;
+    }
+
+    try {
+      const saleNotifications = (await getSellerSaleNotifications()) as {
+        status?: string;
+      }[];
+      setHasPendingSaleApproval(
+        saleNotifications.some((notification) => notification.status !== "shipped"),
+      );
+    } catch (error) {
+      console.error("sale approval notification state could not be fetched: ", error);
+      setHasPendingSaleApproval(false);
+    }
+  }, [authInstance]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPendingSaleApprovalState();
+    }, [loadPendingSaleApprovalState]),
+  );
 
   const LoggedOut = async () => {
     try {
@@ -121,6 +147,11 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
           />
           <ProfileSectionButton
             title={t("Orders Waiting Approval")}
+            iconName={
+              hasPendingSaleApproval
+                ? "notifications"
+                : "notifications-outline"
+            }
             onPress={() => navigateIfVerified("OrderApprovalScreen")}
           />
           <ProfileSectionButton

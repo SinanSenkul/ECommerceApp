@@ -12,6 +12,27 @@ import { PersistGate } from "redux-persist/integration/react";
 import { getLocales } from "expo-localization";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { stripeConfig } from "./src/config/stripe";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./src/config/firebase";
+import { useDispatch } from "react-redux";
+import { switchToDayMode } from "./src/store/reducers/dayNightModeSlice";
+
+const LoggedOutDayModeSync = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        dispatch(switchToDayMode());
+      }
+    });
+
+    return unsubscribe;
+  }, [dispatch]);
+
+  return null;
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -38,9 +59,10 @@ export default function App() {
   }
 
   return (
-    <>
+    <GestureHandlerRootView style={styles.container}>
       <Provider store={store}>
         <PersistGate persistor={persistor}>
+          <LoggedOutDayModeSync />
           <I18nextProvider i18n={i18n}>
             <StripeProvider publishableKey={stripeConfig.publishableKey}>
               <NavigationContainer>
@@ -51,7 +73,7 @@ export default function App() {
           </I18nextProvider>
         </PersistGate>
       </Provider>
-    </>
+    </GestureHandlerRootView>
   );
 }
 

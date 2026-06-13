@@ -13,11 +13,17 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 // import { auth } from "../../config/firebase";
-import { getAuth, deleteUser, signOut } from "firebase/auth";
+import {
+  deleteUser,
+  EmailAuthProvider,
+  getAuth,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 import { showMessage } from "react-native-flash-message";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { RootState } from "../../store/store";
+import { deleteUserPublicData } from "../../config/dataServices";
 
 const createSchema = (translate: (key: string) => string) =>
   yup
@@ -32,12 +38,13 @@ const createSchema = (translate: (key: string) => string) =>
 type formData = yup.InferType<ReturnType<typeof createSchema>>;
 
 const DeleteUserScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization tool
   const schema = useMemo(() => createSchema(t), [t]);
   const auth = getAuth();
   const user = auth.currentUser;
   const [modalVisible, setModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { mode } = useSelector((state: RootState) => state.appColor);
   const isNight = mode === "nightMode";
   const lightMode = {
@@ -76,33 +83,55 @@ const DeleteUserScreen = () => {
       return;
     }
     try {
-      await signOut(auth);
-      deleteUser(user)
-        .then(() => {
-          showMessage({
-            message: t("Account deleted successfully!"),
-            type: "success",
-            duration: 1000,
-            floating: true,
-            icon: "success",
-            position: "top",
-          });
-          // Navigate to login or home screen
-          // navigation.navigate("MainAppBottomTabs");
-        })
-        .catch((error) => {
-          let message = t("Deletion failed");
-          showMessage({
-            message: message,
-            type: "danger",
-            duration: 1000,
-            floating: true,
-            icon: "danger",
-            position: "top",
-          });
+      if (!user.email) {
+        showMessage({
+          message: t("Deletion failed"),
+          type: "danger",
+          duration: 1400,
+          floating: true,
+          icon: "danger",
+          position: "top",
         });
-    } catch (e) {
-      console.log("deactivation error: ", e);
+        return;
+      }
+
+      setIsDeleting(true);
+      const credential = EmailAuthProvider.credential(user.email, data.password);
+      await reauthenticateWithCredential(user, credential);
+      await deleteUserPublicData(user.uid);
+      await deleteUser(user);
+      showMessage({
+        message: t("Account deleted successfully!"),
+        type: "success",
+        duration: 1000,
+        floating: true,
+        icon: "success",
+        position: "top",
+      });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "MainAppBottomTabs" }],
+      });
+    } catch (error: any) {
+      console.log("deactivation error: ", error);
+      const message =
+        error?.code === "auth/wrong-password" ||
+        error?.code === "auth/invalid-credential"
+          ? t("Current password is incorrect")
+          : error?.code === "auth/requires-recent-login"
+            ? t("Please log in again to change your password")
+            : t("Deletion failed");
+
+      showMessage({
+        message,
+        type: "danger",
+        duration: 1800,
+        floating: true,
+        icon: "danger",
+        position: "top",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -155,7 +184,8 @@ const DeleteUserScreen = () => {
 
             {/* Confirm button triggers the actual deletion with password validation */}
             <AppButton
-              title={t("Yes, Delete My Account")}
+              title={isDeleting ? t("Deleting") : t("Yes, Delete My Account")}
+              disabled={isDeleting}
               onPress={() => {
                 setModalVisible(false);
                 // This calls your existing form submission (password validation + deactivateUser)
@@ -201,7 +231,8 @@ const DeleteUserScreen = () => {
         />
         <AppText style={styles.appName}>Smart E-Commerce</AppText>
         <AppButton
-          title={t("Delete My Account")}
+          title={isDeleting ? t("Deleting") : t("Delete My Account")}
+          disabled={isDeleting}
           onPress={handleSubmit(handleDeletePress)}
           style={{ backgroundColor: AppColors.red }}
         />

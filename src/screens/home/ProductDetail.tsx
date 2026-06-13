@@ -1,12 +1,16 @@
 import {
+  FlatList,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
@@ -24,6 +28,7 @@ import { RootState } from "../../store/store";
 import { useTranslation } from "react-i18next";
 import { db } from "../../config/firebase";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { PanGestureHandler, State } from "react-native-gesture-handler";
 
 interface ProductDetailRouteParams {
   product?: {
@@ -42,12 +47,15 @@ interface ProductDetailRouteParams {
 
 const fallbackImage =
   "https://t3.ftcdn.net/jpg/06/99/50/46/360_F_699504686_ArEQKHF2lsseX9z01gglG0Aol20x85BQ.jpg";
+const CLOSE_SWIPE_DISTANCE = vs(90);
+const CLOSE_SWIPE_VELOCITY = vs(500);
 
 const ProductDetail = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const { width } = useWindowDimensions();
   const { items } = useSelector((state: RootState) => state.cartSlice);
   const { mode } = useSelector((state: RootState) => state.appColor);
   const product = (route.params as ProductDetailRouteParams | undefined)
@@ -57,11 +65,27 @@ const ProductDetail = () => {
 
   const title = product?.title ?? product?.productName ?? "";
   const price = product?.price ?? product?.productPrice ?? 0;
-  const imageURL =
-    product?.imageURL ?? product?.productImage ?? product?.productImages?.[0] ?? "";
-  const [imgSource, setImgSource] = useState(imageURL || fallbackImage);
+  const productImageList = useMemo(() => {
+    const imageCandidates = [
+      ...(product?.productImages ?? []),
+      product?.imageURL,
+      product?.productImage,
+    ].filter((imageUri): imageUri is string => Boolean(imageUri));
+
+    const uniqueImages = imageCandidates.filter(
+      (imageUri, index, allImages) => allImages.indexOf(imageUri) === index,
+    );
+
+    return uniqueImages.length > 0 ? uniqueImages : [fallbackImage];
+  }, [product?.imageURL, product?.productImage, product?.productImages]);
+  const imageURL = productImageList[0] ?? fallbackImage;
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [failedImageUris, setFailedImageUris] = useState<Record<string, boolean>>(
+    {},
+  );
   const [sellerFullName, setSellerFullName] = useState("");
   const isOwnProduct = Boolean(user?.uid && product?.sellerId === user.uid);
+  const imageCarouselWidth = width - sharedStyles.paddingHorizontal * 2;
 
   const isNight = mode === "nightMode";
   const lightMode = {
@@ -123,6 +147,35 @@ const ProductDetail = () => {
     });
   };
 
+  const closeOnDownwardSwipe = ({ nativeEvent }: any) => {
+    if (nativeEvent.state !== State.END) {
+      return;
+    }
+
+    const { translationX, translationY, velocityY } = nativeEvent;
+    const isDownwardSwipe =
+      translationY > Math.abs(translationX) * 1.5 &&
+      (translationY > CLOSE_SWIPE_DISTANCE || velocityY > CLOSE_SWIPE_VELOCITY);
+
+    if (isDownwardSwipe) {
+      navigation.goBack();
+    }
+  };
+
+  const handleCarouselScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    const nextIndex = Math.round(
+      event.nativeEvent.contentOffset.x / imageCarouselWidth,
+    );
+    setActiveImageIndex(nextIndex);
+  };
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+    setFailedImageUris({});
+  }, [product?.id, productImageList]);
+
   useEffect(() => {
     const loadSeller = async () => {
       if (!product?.sellerId) {
@@ -152,49 +205,97 @@ const ProductDetail = () => {
   }, [product?.sellerId]);
 
   return (
-    <AppSafeView
-      style={[styles.container, { backgroundColor: lightMode.backgroundColor }]}
+    <PanGestureHandler
+      activeOffsetY={40}
+      failOffsetX={[-35, 35]}
+      onHandlerStateChange={closeOnDownwardSwipe}
     >
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: lightMode.surfaceColor,
-            borderBottomColor: lightMode.borderColor,
-          },
-        ]}
-      >
-        <AppText style={styles.headerTitle} numberOfLines={1}>
-          {t("Product Details")}
-        </AppText>
-        <TouchableOpacity
-          activeOpacity={0.75}
-          onPress={() => navigation.goBack()}
-          style={styles.closeButton}
-        >
-          <Ionicons name="close" size={s(22)} color={AppColors.red} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View
+      <View style={styles.gestureContainer}>
+        <AppSafeView
           style={[
-            styles.imageContainer,
-            {
-              backgroundColor: lightMode.surfaceColor,
-              borderColor: lightMode.borderColor,
-            },
+            styles.container,
+            { backgroundColor: lightMode.backgroundColor },
           ]}
         >
-          <Image
-            source={{ uri: imgSource }}
-            style={styles.image}
-            onError={() => setImgSource(fallbackImage)}
-          />
-        </View>
+          <View
+            style={[
+              styles.header,
+              {
+                backgroundColor: lightMode.surfaceColor,
+                borderBottomColor: lightMode.borderColor,
+              },
+            ]}
+          >
+            <AppText style={styles.headerTitle} numberOfLines={1}>
+              {t("Product Details")}
+            </AppText>
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => navigation.goBack()}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={s(22)} color={AppColors.red} />
+            </TouchableOpacity>
+          </View>
+
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={[
+              styles.imageContainer,
+              {
+                backgroundColor: lightMode.surfaceColor,
+                borderColor: lightMode.borderColor,
+              },
+            ]}
+          >
+            <FlatList
+              data={productImageList}
+              style={styles.carouselList}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: failedImageUris[item] ? fallbackImage : item }}
+                  style={[styles.image, { width: imageCarouselWidth }]}
+                  onError={() =>
+                    setFailedImageUris((currentFailedUris) => ({
+                      ...currentFailedUris,
+                      [item]: true,
+                    }))
+                  }
+                />
+              )}
+              keyExtractor={(item, index) => `${item}-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              getItemLayout={(_, index) => ({
+                length: imageCarouselWidth,
+                offset: imageCarouselWidth * index,
+                index,
+              })}
+              onMomentumScrollEnd={handleCarouselScrollEnd}
+            />
+            {productImageList.length > 1 && (
+              <View style={styles.carouselDots}>
+                {productImageList.map((imageUri, index) => (
+                  <View
+                    key={`${imageUri}-${index}`}
+                    style={[
+                      styles.carouselDot,
+                      {
+                        backgroundColor:
+                          index === activeImageIndex
+                            ? AppColors.primary
+                            : lightMode.borderColor,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
 
         <View style={styles.detailsContainer}>
           <AppText style={styles.title}>{title}</AppText>
@@ -242,7 +343,9 @@ const ProductDetail = () => {
           </TouchableOpacity>
         </View>
       )}
-    </AppSafeView>
+        </AppSafeView>
+      </View>
+    </PanGestureHandler>
   );
 };
 
@@ -250,6 +353,9 @@ export default ProductDetail;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  gestureContainer: {
     flex: 1,
   },
   header: {
@@ -292,6 +398,25 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     resizeMode: "contain",
+  },
+  carouselList: {
+    height: "100%",
+    width: "100%",
+  },
+  carouselDots: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: vs(10),
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    columnGap: s(6),
+  },
+  carouselDot: {
+    height: s(7),
+    width: s(7),
+    borderRadius: s(7),
   },
   detailsContainer: {
     paddingTop: vs(18),
