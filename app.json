@@ -54,7 +54,14 @@
           "merchantIdentifier": "",
           "enableGooglePay": false
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      "./plugins/withBadgeOnlyNotifications"
     ],
     "extra": {
       "eas": {
