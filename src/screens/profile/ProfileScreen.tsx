@@ -22,6 +22,7 @@ import {
 } from "../../store/reducers/dayNightModeSlice";
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { getSellerSaleNotifications } from "../../config/dataServices";
+import { setSaleNotificationBadgeCount } from "../../services/saleNotificationBadgeService";
 
 interface IProfileScreen {
   username?: string;
@@ -31,7 +32,7 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch(); //redux
   const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
-  const [hasPendingSaleApproval, setHasPendingSaleApproval] = useState(false);
+  const [pendingSaleApprovalCount, setPendingSaleApprovalCount] = useState(0);
   const authInstance = getAuth();
 
   const { t } = useTranslation(); //localization
@@ -56,7 +57,8 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
 
   const loadPendingSaleApprovalState = useCallback(async () => {
     if (!authInstance.currentUser) {
-      setHasPendingSaleApproval(false);
+      setPendingSaleApprovalCount(0);
+      setSaleNotificationBadgeCount(0);
       return;
     }
 
@@ -64,12 +66,14 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
       const saleNotifications = (await getSellerSaleNotifications()) as {
         status?: string;
       }[];
-      setHasPendingSaleApproval(
-        saleNotifications.some((notification) => notification.status !== "shipped"),
-      );
+      const pendingCount = saleNotifications.filter(
+        (notification) => notification.status !== "shipped",
+      ).length;
+      setPendingSaleApprovalCount(pendingCount);
+      setSaleNotificationBadgeCount(pendingCount);
     } catch (error) {
       console.error("sale approval notification state could not be fetched: ", error);
-      setHasPendingSaleApproval(false);
+      setPendingSaleApprovalCount(0);
     }
   }, [authInstance]);
 
@@ -148,10 +152,11 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
           <ProfileSectionButton
             title={t("Orders Waiting Approval")}
             iconName={
-              hasPendingSaleApproval
+              pendingSaleApprovalCount > 0
                 ? "notifications"
                 : "notifications-outline"
             }
+            badgeCount={pendingSaleApprovalCount}
             onPress={() => navigateIfVerified("OrderApprovalScreen")}
           />
           <ProfileSectionButton

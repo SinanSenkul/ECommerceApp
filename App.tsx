@@ -17,6 +17,11 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./src/config/firebase";
 import { useDispatch } from "react-redux";
 import { switchToDayMode } from "./src/store/reducers/dayNightModeSlice";
+import {
+  subscribeToActiveAppBadgeSync,
+  subscribeToSaleNotificationBadgeUpdates,
+  syncSaleNotificationBadgeCount,
+} from "./src/services/saleNotificationBadgeService";
 
 const LoggedOutDayModeSync = () => {
   const dispatch = useDispatch();
@@ -30,6 +35,22 @@ const LoggedOutDayModeSync = () => {
 
     return unsubscribe;
   }, [dispatch]);
+
+  return null;
+};
+
+const SaleNotificationBadgeSync = () => {
+  useEffect(() => {
+    syncSaleNotificationBadgeCount();
+    const unsubscribeFromBadgeUpdates =
+      subscribeToSaleNotificationBadgeUpdates();
+    const unsubscribeFromAppState = subscribeToActiveAppBadgeSync();
+
+    return () => {
+      unsubscribeFromBadgeUpdates();
+      unsubscribeFromAppState();
+    };
+  }, []);
 
   return null;
 };
@@ -63,6 +84,7 @@ export default function App() {
       <Provider store={store}>
         <PersistGate persistor={persistor}>
           <LoggedOutDayModeSync />
+          <SaleNotificationBadgeSync />
           <I18nextProvider i18n={i18n}>
             <StripeProvider publishableKey={stripeConfig.publishableKey}>
               <NavigationContainer>

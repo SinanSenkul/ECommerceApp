@@ -12,16 +12,19 @@ interface IProfileSectionButton {
   onPress?: () => void;
   title?: string;
   iconName?: keyof typeof Ionicons.glyphMap;
+  badgeCount?: number;
 }
 
 const ProfileSectionButton: FC<IProfileSectionButton> = ({
   onPress,
   title,
   iconName,
+  badgeCount = 0,
 }) => {
   const { mode } = useSelector((state: RootState) => state.appColor);
   const iconColor =
     mode === "nightMode" ? AppColors.white : AppColors.backgroundBlack;
+  const showBadge = badgeCount > 0;
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
@@ -31,6 +34,13 @@ const ProfileSectionButton: FC<IProfileSectionButton> = ({
       {iconName && (
         <View style={styles.iconContainer}>
           <Ionicons name={iconName} size={s(20)} color={iconColor} />
+          {showBadge && (
+            <View style={styles.badge}>
+              <AppText style={styles.badgeText}>
+                {badgeCount > 99 ? "99+" : badgeCount}
+              </AppText>
+            </View>
+          )}
         </View>
       )}
     </TouchableOpacity>
@@ -64,5 +74,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: s(8),
+  },
+  badge: {
+    minWidth: s(16),
+    height: s(16),
+    borderRadius: s(8),
+    paddingHorizontal: s(4),
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    right: -s(8),
+    top: -s(8),
+    backgroundColor: AppColors.red,
+  },
+  badgeText: {
+    color: AppColors.white,
+    fontFamily: AppFonts.Bold,
+    fontSize: s(9),
+    lineHeight: s(11),
   },
 });
