@@ -16,7 +16,7 @@ const countPendingSaleNotifications = (
   docs.filter((notificationDoc) => notificationDoc.data().status !== "shipped")
     .length;
 
-const requestBadgePermission = async () => {
+export const requestSaleNotificationBadgePermission = async () => {
   try {
     const currentPermissions = await Notifications.getPermissionsAsync();
     if (
@@ -52,7 +52,7 @@ export const setSaleNotificationBadgeCount = async (count: number) => {
   try {
     const safeCount = Math.max(0, count);
     if (safeCount > 0) {
-      const canSetBadge = await requestBadgePermission();
+      const canSetBadge = await requestSaleNotificationBadgePermission();
       if (!canSetBadge) {
         return false;
       }
@@ -66,6 +66,8 @@ export const setSaleNotificationBadgeCount = async (count: number) => {
 };
 
 export const syncSaleNotificationBadgeCount = async () => {
+  await requestSaleNotificationBadgePermission();
+
   const sellerId = auth.currentUser?.uid;
   if (!sellerId) {
     await setSaleNotificationBadgeCount(0);
