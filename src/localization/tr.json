@@ -102,6 +102,7 @@
   "You cannot add your own item to cart": "Kendi ürününüzü sepete ekleyemezsiniz",
   "Stock Quantity": "Stok Adedi",
   "Product name is required": "Ürün adı zorunludur",
+  "Product name must not exceed 40 characters": "Ürün adı 40 karakteri geçemez",
   "Product price is required": "Ürün fiyatı zorunludur",
   "Enter a valid price": "Geçerli bir fiyat girin",
   "Stock quantity is required": "Stok adedi zorunludur",

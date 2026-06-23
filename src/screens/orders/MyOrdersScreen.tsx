@@ -23,7 +23,9 @@ interface OrderListItem {
   };
   status?: "ordered" | "shipped";
   items?: Array<{
+    id?: string | number;
     title?: string;
+    status?: "ordered" | "shipped";
   }>;
 }
 

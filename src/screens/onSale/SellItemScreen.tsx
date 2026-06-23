@@ -105,7 +105,11 @@ const createSchema = (translate: (key: string) => string) =>
     .object({
       productName: yup
         .string()
-        .required(translate("Product name is required")),
+        .required(translate("Product name is required"))
+        .max(
+          40,
+          translate("Product name must not exceed 40 characters"),
+        ),
       productPrice: yup
         .string()
         .required(translate("Product price is required"))

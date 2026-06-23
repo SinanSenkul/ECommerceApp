@@ -29,6 +29,7 @@ i18n.use(initReactI18next).init({
   fallbackLng: "en",
   defaultNS: "translation", //NS: name space
   ns: ["translation"],
+  nsSeparator: false,
   react: {
     useSuspense: false,
   },

@@ -163,9 +163,13 @@ const CheckoutScreen = () => {
         presentPaymentSheet,
       });
 
+      const orderItems = items.map((item) => ({
+        ...item,
+        status: "ordered" as const,
+      }));
       const orderBody = {
         ...formData,
-        items,
+        items: orderItems,
         priceSum,
         payment,
         paymentStatus: "paid",

@@ -30,6 +30,7 @@ interface SaleNotification {
   buyerName?: string;
   buyerEmail?: string;
   buyerId?: string;
+  productId?: string;
   productName?: string;
   productPrice?: number;
   orderId?: string;
@@ -116,7 +117,8 @@ const OrderApprovalScreen = () => {
     if (
       !notification.buyerId ||
       !notification.userOrderId ||
-      !notification.orderId
+      !notification.orderId ||
+      !notification.productId
     ) {
       showMessage({
         message: t("Order update failed"),
@@ -135,6 +137,7 @@ const OrderApprovalScreen = () => {
         buyerId: notification.buyerId,
         userOrderId: notification.userOrderId,
         orderId: notification.orderId,
+        productId: notification.productId,
       });
       setNotifications((currentNotifications) =>
         currentNotifications.filter(

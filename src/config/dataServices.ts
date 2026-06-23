@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   serverTimestamp,
   updateDoc,
   where,
@@ -225,18 +226,19 @@ export const markSaleNotificationOrderAsShipped = async ({
   buyerId,
   userOrderId,
   orderId,
+  productId,
 }: {
   notificationId: string;
   buyerId: string;
   userOrderId: string;
   orderId: string;
+  productId: string;
 }) => {
   const sellerId = auth.currentUser?.uid;
   if (!sellerId) {
     throw new Error("Seller not found");
   }
 
-  const batch = writeBatch(db);
   const userOrderRef = doc(db, "users", buyerId, "orders", userOrderId);
   const orderRef = doc(db, "orders", orderId);
   const saleNotificationRef = doc(
@@ -247,9 +249,46 @@ export const markSaleNotificationOrderAsShipped = async ({
     notificationId,
   );
 
-  batch.update(userOrderRef, { status: "shipped" });
-  batch.update(orderRef, { status: "shipped" });
-  batch.delete(saleNotificationRef);
+  return runTransaction(db, async (transaction) => {
+    const [userOrderSnapshot, orderSnapshot] = await Promise.all([
+      transaction.get(userOrderRef),
+      transaction.get(orderRef),
+    ]);
 
-  return batch.commit();
+    const updateOrderItems = (orderData: Record<string, unknown>) => {
+      const items = Array.isArray(orderData.items) ? orderData.items : [];
+      const updatedItems = items.map((item) => {
+        if (
+          item &&
+          typeof item === "object" &&
+          String((item as { id?: string | number }).id) === productId
+        ) {
+          return { ...item, status: "shipped" };
+        }
+
+        return item;
+      });
+      const allItemsShipped =
+        updatedItems.length > 0 &&
+        updatedItems.every(
+          (item) =>
+            item &&
+            typeof item === "object" &&
+            (item as { status?: string }).status === "shipped",
+        );
+
+      return {
+        items: updatedItems,
+        status: allItemsShipped ? "shipped" : "ordered",
+      };
+    };
+
+    if (userOrderSnapshot.exists()) {
+      transaction.update(userOrderRef, updateOrderItems(userOrderSnapshot.data()));
+    }
+    if (orderSnapshot.exists()) {
+      transaction.update(orderRef, updateOrderItems(orderSnapshot.data()));
+    }
+    transaction.delete(saleNotificationRef);
+  });
 };

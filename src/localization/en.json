@@ -102,6 +102,7 @@
   "You cannot add your own item to cart": "You cannot add your own item to cart",
   "Stock Quantity": "Stock Quantity",
   "Product name is required": "Product name is required",
+  "Product name must not exceed 40 characters": "Product name must not exceed 40 characters",
   "Product price is required": "Product price is required",
   "Enter a valid price": "Enter a valid price",
   "Stock quantity is required": "Stock quantity is required",

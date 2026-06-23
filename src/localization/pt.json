@@ -102,6 +102,7 @@
   "You cannot add your own item to cart": "Você não pode adicionar seu próprio item ao carrinho",
   "Stock Quantity": "Quantidade em estoque",
   "Product name is required": "O nome do produto é obrigatório",
+  "Product name must not exceed 40 characters": "O nome do produto não pode exceder 40 caracteres",
   "Product price is required": "O preço do produto é obrigatório",
   "Enter a valid price": "Digite um preço válido",
   "Stock quantity is required": "A quantidade em estoque é obrigatória",

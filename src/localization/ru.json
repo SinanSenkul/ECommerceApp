@@ -102,6 +102,7 @@
   "You cannot add your own item to cart": "Вы не можете добавить свой собственный товар в корзину",
   "Stock Quantity": "Количество на складе",
   "Product name is required": "Название товара обязательно",
+  "Product name must not exceed 40 characters": "Название товара не должно превышать 40 символов",
   "Product price is required": "Цена товара обязательна",
   "Enter a valid price": "Введите корректную цену",
   "Stock quantity is required": "Количество на складе обязательно",
