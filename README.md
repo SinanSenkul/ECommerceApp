@@ -163,7 +163,7 @@ npm run web      # Start Expo web
 - The app is configured for portrait orientation.
 - iOS bundle identifier: `com.anonymous.ecommerceapp`
 - Android package: `com.anonymous.ecommerceapp`
-- App version in Expo config: `1.0.2`
+- App version in Expo config: `1.0.6`
 - Some TypeScript navigation typing cleanup is still pending in older screens.
 
 ## Author
