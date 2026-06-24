@@ -1,4 +1,5 @@
-import { FlatList, StyleSheet } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import React, { useState } from "react";
 import OrderItem from "../../components/orders/OrderItem";
 import { getUserOrders } from "../../config/dataServices";
@@ -50,6 +51,7 @@ const getOrderTime = (order: OrderListItem) => {
 const MyOrdersScreen = () => {
   const { t } = useTranslation();
   const [orderList, setOrderList] = useState<OrderListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { mode } = useSelector((state: RootState) => state.appColor);
   const isNight = mode === "nightMode";
   const lightMode = {
@@ -59,18 +61,23 @@ const MyOrdersScreen = () => {
   };
 
   const getOrders = async () => {
-    const verifiedUser = await requireVerifiedUser(t);
-    if (!verifiedUser) {
-      setOrderList([]);
-      return;
-    }
+    try {
+      setIsLoading(true);
+      const verifiedUser = await requireVerifiedUser(t);
+      if (!verifiedUser) {
+        setOrderList([]);
+        return;
+      }
 
-    const res = await getUserOrders();
-    const sortedOrders = ((res ?? []) as OrderListItem[]).sort(
-      (firstOrder, secondOrder) =>
-        getOrderTime(secondOrder) - getOrderTime(firstOrder),
-    );
-    setOrderList(sortedOrders);
+      const res = await getUserOrders();
+      const sortedOrders = ((res ?? []) as OrderListItem[]).sort(
+        (firstOrder, secondOrder) =>
+          getOrderTime(secondOrder) - getOrderTime(firstOrder),
+      );
+      setOrderList(sortedOrders);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useFocusEffect(
@@ -85,9 +92,13 @@ const MyOrdersScreen = () => {
     >
       <HomeHeader showBackButton />
       <FlatList
-        style={{ width: "100%" }}
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
         data={orderList}
         keyExtractor={(item) => item.id.toString()}
+        alwaysBounceVertical
+        bounces
+        overScrollMode="always"
         renderItem={({ item }) => {
           // console.log(JSON.stringify(item, null, 3));
 
@@ -101,9 +112,17 @@ const MyOrdersScreen = () => {
           );
         }}
         ListEmptyComponent={
-          <AppText style={styles.emptyText}>
-            {t("You have no orders... Yet.")}
-          </AppText>
+          isLoading ? (
+            <ActivityIndicator
+              color={isNight ? AppColors.white : AppColors.black}
+              size="large"
+              style={styles.loading}
+            />
+          ) : (
+            <AppText style={styles.emptyText}>
+              {t("You have no orders... Yet.")}
+            </AppText>
+          )
         }
       />
     </AppSafeView>
@@ -117,8 +136,19 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  list: {
+    flex: 1,
+    width: "100%",
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingBottom: vs(24),
+  },
   emptyText: {
     marginTop: vs(28),
     textAlign: "center",
+  },
+  loading: {
+    marginTop: vs(28),
   },
 });
