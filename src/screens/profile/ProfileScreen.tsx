@@ -23,6 +23,7 @@ import {
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { getSellerSaleNotifications } from "../../config/dataServices";
 import { setSaleNotificationBadgeCount } from "../../services/saleNotificationBadgeService";
+import { unregisterPushNotificationsForCurrentUser } from "../../services/pushNotificationService";
 
 interface IProfileScreen {
   username?: string;
@@ -87,6 +88,7 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     try {
       dispatch(emptyItems());
       dispatch(switchToDayMode());
+      await unregisterPushNotificationsForCurrentUser();
       await signOut(authInstance);
     } catch (e) {
       console.error("logout error: ", e);

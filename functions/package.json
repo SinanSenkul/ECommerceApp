@@ -1,0 +1,17 @@
+{
+  "name": "smart-e-commerce-functions",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "deploy": "firebase deploy --only functions",
+    "lint": "node --check index.js"
+  },
+  "dependencies": {
+    "e-commerce-app": "file:..",
+    "firebase-admin": "latest",
+    "firebase-functions": "latest"
+  }
+}

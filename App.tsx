@@ -22,6 +22,7 @@ import {
   subscribeToSaleNotificationBadgeUpdates,
   syncSaleNotificationBadgeCount,
 } from "./src/services/saleNotificationBadgeService";
+import { registerPushNotificationsForCurrentUser } from "./src/services/pushNotificationService";
 
 const LoggedOutDayModeSync = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,20 @@ const SaleNotificationBadgeSync = () => {
       unsubscribeFromBadgeUpdates();
       unsubscribeFromAppState();
     };
+  }, []);
+
+  return null;
+};
+
+const PushNotificationRegistration = () => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        registerPushNotificationsForCurrentUser();
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   return null;
@@ -85,6 +100,7 @@ export default function App() {
         <PersistGate persistor={persistor}>
           <LoggedOutDayModeSync />
           <SaleNotificationBadgeSync />
+          <PushNotificationRegistration />
           <I18nextProvider i18n={i18n}>
             <StripeProvider publishableKey={stripeConfig.publishableKey}>
               <NavigationContainer>

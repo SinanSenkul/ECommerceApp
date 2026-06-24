@@ -58,10 +58,9 @@
       [
         "expo-notifications",
         {
-          "enableBackgroundRemoteNotifications": false
+          "enableBackgroundRemoteNotifications": true
         }
-      ],
-      "./plugins/withBadgeOnlyNotifications"
+      ]
     ],
     "extra": {
       "eas": {
