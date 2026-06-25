@@ -2,6 +2,9 @@ const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { logger } = require("firebase-functions");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const {
+  getSellerOrderPushMessage,
+} = require("./orderPushLocalization");
 
 initializeApp();
 
@@ -52,12 +55,17 @@ exports.notifySellerOfSale = onDocumentCreated(
       return;
     }
 
-    const buyerName = typeof sale.buyerName === "string" ? sale.buyerName : "A buyer";
-    const productName = typeof sale.productName === "string" ? sale.productName : "your product";
+    const pushMessage = getSellerOrderPushMessage({
+      language: sellerSnapshot.exists
+        ? sellerSnapshot.get("pushNotificationLanguage")
+        : "en",
+      buyerName: sale.buyerName,
+      productName: sale.productName,
+    });
     const messages = validTokens.map((to) => ({
       to,
-      title: "New order received",
-      body: `${buyerName} ordered ${productName}.`,
+      title: pushMessage.title,
+      body: pushMessage.body,
       sound: "default",
       priority: "high",
       channelId: "orders",

@@ -11,7 +11,7 @@ The app uses Expo's push service. It uses FCM for Android delivery and APNs for 
 3. Install the Functions dependencies and deploy the trigger:
 
    ```bash
-   npm --prefix functions install
+   npm --prefix firebase-push-functions install
    npm install -g firebase-tools
    firebase login
    firebase deploy --only functions

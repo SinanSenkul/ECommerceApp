@@ -3,8 +3,19 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { arrayRemove, arrayUnion, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
+import i18n, { getDeviceLanguage, normalizeLanguage } from "../localization/i18n";
 
 const ORDER_NOTIFICATION_CHANNEL = "orders";
+const ORDER_NOTIFICATION_CHANNEL_NAMES = {
+  en: "Orders",
+  tr: "Siparişler",
+  es: "Pedidos",
+  de: "Bestellungen",
+  it: "Ordini",
+  fr: "Commandes",
+  ru: "Заказы",
+  pt: "Pedidos",
+};
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -27,8 +38,9 @@ const getExpoPushToken = async () => {
   }
 
   if (Platform.OS === "android") {
+    const language = normalizeLanguage(i18n.language || getDeviceLanguage());
     await Notifications.setNotificationChannelAsync(ORDER_NOTIFICATION_CHANNEL, {
-      name: "Orders",
+      name: ORDER_NOTIFICATION_CHANNEL_NAMES[language],
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       sound: "default",
@@ -74,6 +86,9 @@ export const registerPushNotificationsForCurrentUser = async () => {
       doc(db, "users", userId),
       {
         expoPushTokens: arrayUnion(expoPushToken),
+        pushNotificationLanguage: normalizeLanguage(
+          i18n.language || getDeviceLanguage(),
+        ),
         pushTokenUpdatedAt: serverTimestamp(),
       },
       { merge: true },
