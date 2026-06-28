@@ -14,13 +14,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
-import {
-  collection,
-  doc,
-  getDoc,
-  runTransaction,
-  serverTimestamp,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebase";
 import { showMessage } from "react-native-flash-message";
 import { emptyItems } from "../../store/reducers/cartSlice";
@@ -29,6 +23,7 @@ import { createStripePayment } from "../../services/paymentService";
 import { useStripe } from "@stripe/stripe-react-native";
 import { isStripeConfigured, stripeConfig } from "../../config/stripe";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { normalizeCurrency } from "../../helpers/currency";
 
 const CheckoutScreen = () => {
   const { t } = useTranslation();
@@ -66,6 +61,7 @@ const CheckoutScreen = () => {
   const dispatch = useDispatch();
 
   const { items } = useSelector((state: RootState) => state.cartSlice);
+  const currency = normalizeCurrency(items[0]?.currency);
   const user = auth.currentUser;
 
   const priceSum =
@@ -115,14 +111,6 @@ const CheckoutScreen = () => {
   }, [reset, user?.email]);
 
   const saveOrder = async (formData: formData) => {
-    function formatToDDMMYYYY(date: Date): string {
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-
-      return `${day}.${month}.${year}`;
-    }
-
     try {
       const verifiedUser = await requireVerifiedUser(t);
       if (!verifiedUser) {
@@ -140,6 +128,14 @@ const CheckoutScreen = () => {
         return;
       }
 
+      if (items.some((item) => normalizeCurrency(item.currency) !== currency)) {
+        Alert.alert(
+          t("Order could not be completed"),
+          t("You can only checkout items with the same currency"),
+        );
+        return;
+      }
+
       setIsPaying(true);
 
       if (!isStripeConfigured) {
@@ -150,88 +146,19 @@ const CheckoutScreen = () => {
         return;
       }
 
-      const payment = await createStripePayment({
+      await createStripePayment({
         amount: priceSum,
-        currency: "TRY",
+        currency,
         itemIds: items.map((item) => item.id),
         userId: checkoutUserId,
+        authToken: await verifiedUser.getIdToken(),
         fullName: formData.fullName,
         emailAddress: formData.emailAddress,
+        detailedAddress: formData.detailedAddress,
         endpoint: stripeConfig.paymentSheetEndpoint,
         merchantDisplayName: stripeConfig.merchantDisplayName,
         initPaymentSheet,
         presentPaymentSheet,
-      });
-
-      const orderItems = items.map((item) => ({
-        ...item,
-        status: "ordered" as const,
-      }));
-      const orderBody = {
-        ...formData,
-        items: orderItems,
-        priceSum,
-        payment,
-        paymentStatus: "paid",
-        status: "ordered",
-        createDate: formatToDDMMYYYY(new Date()),
-        createdAt: serverTimestamp(),
-      };
-      const userOrderRef = doc(
-        collection(doc(db, "users", checkoutUserId), "orders"),
-      );
-      const orderRef = doc(collection(db, "orders"));
-
-      await runTransaction(db, async (transaction) => {
-        const productRefs = items.map((item) =>
-          doc(db, "products_onsale", String(item.id)),
-        );
-        const productSnapshots = await Promise.all(
-          productRefs.map((productRef) => transaction.get(productRef)),
-        );
-
-        productSnapshots.forEach((productSnapshot, index) => {
-          const productData = productSnapshot.data();
-          const currentStock = productData?.stockQuantity;
-          if (typeof currentStock !== "number") {
-            return;
-          }
-
-          if (currentStock < 1) {
-            throw new Error("Product is out of stock");
-          }
-
-          transaction.update(productRefs[index], {
-            stockQuantity: currentStock - 1,
-          });
-
-          const sellerId = productData?.sellerId;
-          if (typeof sellerId === "string" && sellerId.length > 0) {
-            const saleNotificationRef = doc(
-              collection(doc(db, "users", sellerId), "saleNotifications"),
-            );
-            const purchasedItem = items[index];
-            transaction.set(saleNotificationRef, {
-              sellerId,
-              buyerId: checkoutUserId,
-              buyerName: formData.fullName,
-              buyerEmail: formData.emailAddress,
-              productId: String(purchasedItem.id),
-              productName:
-                productData?.productName ?? purchasedItem.title ?? "",
-              productPrice:
-                productData?.productPrice ?? purchasedItem.price ?? 0,
-              orderId: orderRef.id,
-              userOrderId: userOrderRef.id,
-              status: "unread",
-              createdAt: serverTimestamp(),
-              createDate: formatToDDMMYYYY(new Date()),
-            });
-          }
-        });
-
-        transaction.set(userOrderRef, orderBody);
-        transaction.set(orderRef, orderBody);
       });
 
       dispatch(emptyItems());

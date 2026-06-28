@@ -29,6 +29,7 @@ import {
 } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { normalizeCurrency } from "../../helpers/currency";
 
 interface SaleItem {
   id: string;
@@ -36,6 +37,8 @@ interface SaleItem {
   productName?: string;
   price?: number;
   productPrice?: number;
+  currency?: string;
+  productCurrency?: string;
   imageURL?: string;
   productImage?: string;
 }
@@ -189,6 +192,7 @@ const ItemsOnSaleScreen = () => {
   const renderItem = ({ item }: { item: SaleItem }) => {
     const title = item.title ?? item.productName ?? "";
     const imageURL = item.imageURL ?? item.productImage ?? fallbackImage;
+    const currency = normalizeCurrency(item.currency ?? item.productCurrency);
     const isSavingCurrentItem = savingItemId === item.id;
 
     return (
@@ -210,7 +214,7 @@ const ItemsOnSaleScreen = () => {
             <AppText
               style={[styles.priceLabel, { color: lightMode.mutedTextColor }]}
             >
-              {t("New Price:")}
+              {t("New Price:")} ({currency})
             </AppText>
             <TextInput
               value={priceInputs[item.id] ?? ""}

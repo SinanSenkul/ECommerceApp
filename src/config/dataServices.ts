@@ -13,6 +13,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { normalizeCurrency, SupportedCurrency } from "../helpers/currency";
 
 const getProductsData = async () => {
   try {
@@ -36,6 +37,9 @@ const getProductsData = async () => {
         price: productData.productPrice,
         imageURL: productData.productImage,
         ...serializableProductData,
+        currency: normalizeCurrency(
+          productData.productCurrency ?? productData.currency,
+        ),
       };
 
       if (typeof product.sellerId === "string" && product.sellerId.length > 0) {
@@ -93,6 +97,7 @@ export const getUserOrders = async () => {
 interface ProductOnSalePayload {
   productName: string;
   productPrice: number;
+  productCurrency: SupportedCurrency;
   stockQuantity: number;
   productImages: string[];
   sellerId?: string;
@@ -101,6 +106,7 @@ interface ProductOnSalePayload {
 export const addProductOnSale = async ({
   productName,
   productPrice,
+  productCurrency,
   stockQuantity,
   productImages,
   sellerId,
@@ -108,6 +114,7 @@ export const addProductOnSale = async ({
   const productOnSaleBody = {
     productName,
     productPrice,
+    productCurrency,
     stockQuantity,
     productImage: productImages[0] ?? "",
     productImages,
@@ -149,6 +156,9 @@ export const getSellerProductsOnSale = async () => {
           price: productData.productPrice,
           imageURL: productData.productImage,
           ...productData,
+          currency: normalizeCurrency(
+            productData.productCurrency ?? productData.currency,
+          ),
         },
       ];
     });

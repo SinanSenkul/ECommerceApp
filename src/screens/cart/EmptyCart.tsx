@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 
 const EmptyCart = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization
 
   const { mode } = useSelector((state: RootState) => state.appColor); // nightmode/daymode

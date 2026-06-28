@@ -70,9 +70,9 @@ Translations live in `src/localization`. The app uses English as the fallback la
 
 ## Payments
 
-The app uses Stripe PaymentSheet. The mobile app needs a publishable key and a public HTTPS backend endpoint that creates PaymentSheet data.
+The app uses Stripe PaymentSheet with a backend-owned checkout flow. The mobile app sends a Firebase ID token and item IDs to the backend, while the backend verifies the user, fetches product prices from Firestore, calculates the total, creates a Stripe PaymentIntent, and fulfills paid orders from a Stripe webhook.
 
-The current payment backend is deployed as a Render web service. The app calls the Render-hosted `/payment-sheet` endpoint during checkout, while the Stripe secret key stays only on the backend service.
+The current payment backend can be deployed as a Render web service. The app calls the hosted `/payment-sheet` endpoint during checkout, while Stripe secret keys, Firebase Admin credentials, and webhook signing secrets stay only on the backend service.
 
 Required Expo public environment variables:
 
@@ -82,7 +82,7 @@ EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT=https://your-render-service.onrender.com/payment-sheet
 ```
 
-For local testing, the repository includes `stripe-test-server`, a small Node/Express backend for Stripe test-mode PaymentIntents. Do not commit secret keys. Keep Stripe secret keys only in local or hosted backend environment variables.
+For local testing, the repository includes `stripe-test-server`, a Node/Express backend for Stripe test-mode PaymentIntents and webhook fulfillment. Do not commit secret keys. Keep Stripe secret keys and Firebase service-account credentials only in local or hosted backend environment variables.
 
 ## Getting Started
 
@@ -129,7 +129,15 @@ The server expects:
 
 ```env
 STRIPE_SECRET_KEY=sk_test_your_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"your-project-id"}
 PORT=4242
+```
+
+Use the Stripe CLI to forward local webhook events:
+
+```bash
+stripe listen --forward-to localhost:4242/webhook
 ```
 
 For real device testing or App Store review, the PaymentSheet endpoint must be available over public HTTPS.

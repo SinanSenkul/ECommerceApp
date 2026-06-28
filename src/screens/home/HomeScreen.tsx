@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { RootState } from "../../store/store";
 import ZeroItemSearch from "./ZeroItemSearch";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { normalizeCurrency } from "../../helpers/currency";
 
 const HomeScreen = () => {
   const { items } = useSelector((state: RootState) => state.cartSlice);
@@ -61,6 +62,8 @@ const HomeScreen = () => {
   const onAddtoCartHandler = async (item: any) => {
     const verifiedUser = await requireVerifiedUser(t);
     if (verifiedUser) {
+      const itemCurrency = normalizeCurrency(item.currency ?? item.productCurrency);
+
       if (item.sellerId === verifiedUser.uid) {
         showMessage({
           message: t("You cannot add your own item to cart"),
@@ -83,6 +86,20 @@ const HomeScreen = () => {
         return;
       }
 
+      if (
+        items.length > 0 &&
+        items.some((cartItem) => cartItem.currency !== itemCurrency)
+      ) {
+        showMessage({
+          message: t("You can only add items with the same currency to cart"),
+          type: "info",
+          duration: 1200,
+          floating: true,
+          icon: "info",
+        });
+        return;
+      }
+
       showMessage({
         message: t("Added to Card"),
         type: "success",
@@ -95,6 +112,7 @@ const HomeScreen = () => {
           id: item.id,
           title: item.title,
           price: item.price,
+          currency: itemCurrency,
           imageURL: item.imageURL,
         }),
       );
@@ -121,6 +139,7 @@ const HomeScreen = () => {
           renderItem={({ item }) => (
             <ProductCard
               price={item.price}
+              currency={item.currency ?? item.productCurrency}
               title={item.title}
               imageURL={item.imageURL ?? ""}
               // onAddToCartPress={() => {

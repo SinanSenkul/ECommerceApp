@@ -17,6 +17,7 @@ import { vs } from "react-native-size-matters";
 interface OrderListItem {
   id: string;
   priceSum?: number;
+  currency?: string;
   createDate?: Date | string;
   createdAt?: {
     seconds?: number;
@@ -105,6 +106,7 @@ const MyOrdersScreen = () => {
           return (
             <OrderItem
               totalPrice={item.priceSum}
+              currency={item.currency}
               date={item.createDate}
               status={item.status}
               items={item.items}

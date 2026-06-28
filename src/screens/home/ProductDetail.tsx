@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { db } from "../../config/firebase";
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
+import { formatPrice, normalizeCurrency } from "../../helpers/currency";
 
 interface ProductDetailRouteParams {
   product?: {
@@ -37,6 +38,8 @@ interface ProductDetailRouteParams {
     productName?: string;
     price?: number;
     productPrice?: number;
+    currency?: string;
+    productCurrency?: string;
     imageURL?: string;
     productImage?: string;
     productImages?: string[];
@@ -65,6 +68,7 @@ const ProductDetail = () => {
 
   const title = product?.title ?? product?.productName ?? "";
   const price = product?.price ?? product?.productPrice ?? 0;
+  const currency = normalizeCurrency(product?.currency ?? product?.productCurrency);
   const productImageList = useMemo(() => {
     const imageCandidates = [
       ...(product?.productImages ?? []),
@@ -129,11 +133,26 @@ const ProductDetail = () => {
       return;
     }
 
+    if (
+      items.length > 0 &&
+      items.some((cartItem) => cartItem.currency !== currency)
+    ) {
+      showMessage({
+        message: t("You can only add items with the same currency to cart"),
+        type: "info",
+        duration: 1200,
+        floating: true,
+        icon: "info",
+      });
+      return;
+    }
+
     dispatch(
       addItem({
         id: product.id,
         title,
         price,
+        currency,
         imageURL: imageURL || fallbackImage,
       }),
     );
@@ -300,7 +319,7 @@ const ProductDetail = () => {
         <View style={styles.detailsContainer}>
           <AppText style={styles.title}>{title}</AppText>
           <AppText style={styles.price}>
-            {t("Price:")} {price} ₺
+            {t("Price:")} {formatPrice(price, currency)}
           </AppText>
           {sellerFullName.length > 0 && (
             <AppText

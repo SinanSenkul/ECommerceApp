@@ -19,8 +19,10 @@ interface StripePaymentParams {
   currency: string;
   itemIds: Array<number | string>;
   userId: string;
+  authToken: string;
   fullName: string;
   emailAddress: string;
+  detailedAddress: string;
   endpoint: string;
   merchantDisplayName: string;
   initPaymentSheet: (params: {
@@ -64,8 +66,10 @@ export const createStripePayment = async ({
   currency,
   itemIds,
   userId,
+  authToken,
   fullName,
   emailAddress,
+  detailedAddress,
   endpoint,
   merchantDisplayName,
   initPaymentSheet,
@@ -76,16 +80,15 @@ export const createStripePayment = async ({
     response = await fetch(endpoint, {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${authToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount,
-        currency,
         itemIds,
-        userId,
         customer: {
           name: fullName,
           email: emailAddress,
+          detailedAddress,
         },
       }),
     });
@@ -110,6 +113,8 @@ export const createStripePayment = async ({
   const paymentSheet = (await response.json()) as {
     paymentIntentClientSecret?: string;
     paymentIntentId?: string;
+    amount?: number;
+    currency?: string;
   };
 
   if (!paymentSheet.paymentIntentClientSecret) {
@@ -137,8 +142,8 @@ export const createStripePayment = async ({
 
   return {
     id: paymentSheet.paymentIntentId ?? `stripe_${Date.now()}`,
-    amount,
-    currency,
+    amount: paymentSheet.amount ?? amount,
+    currency: paymentSheet.currency ?? currency,
     paidAt: new Date().toISOString(),
     provider: "stripe",
     status: "succeeded",

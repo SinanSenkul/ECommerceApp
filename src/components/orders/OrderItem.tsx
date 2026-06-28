@@ -9,9 +9,11 @@ import { formatFirestoreDate } from "../../helpers/dateFormatter";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import { formatPrice } from "../../helpers/currency";
 
 interface IOrderItem {
   totalPrice?: number;
+  currency?: string;
   date?: Date | string;
   status?: "ordered" | "shipped";
   items?: Array<{
@@ -23,6 +25,7 @@ interface IOrderItem {
 
 const OrderItem: FC<IOrderItem> = ({
   totalPrice,
+  currency,
   date,
   status = "ordered",
   items = [],
@@ -88,7 +91,9 @@ const OrderItem: FC<IOrderItem> = ({
           {t("Status:")} {statusText}
         </AppText>
       )}
-      <AppText style={styles.text}>{t("Total Price:")} {totalPrice} ₺</AppText>
+      <AppText style={styles.text}>
+        {t("Total Price:")} {formatPrice(totalPrice, currency)}
+      </AppText>
       <AppText style={styles.text}>{t("Date:")} {dateStringified?.toString()}</AppText>
     </View>
   );

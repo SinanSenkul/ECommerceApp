@@ -159,5 +159,8 @@
   "Send a new verification email to continue.": "Devam etmek için yeni bir doğrulama e-postası gönderin.",
   "Resend verification email": "Doğrulama e-postasını tekrar gönder",
   "Verification email sent": "Doğrulama e-postası gönderildi",
-  "Could not send verification email": "Doğrulama e-postası gönderilemedi"
+  "Could not send verification email": "Doğrulama e-postası gönderilemedi",
+  "Currency": "Para birimi",
+  "You can only add items with the same currency to cart": "Sepete yalnizca ayni para birimindeki urunleri ekleyebilirsiniz",
+  "You can only checkout items with the same currency": "Yalnizca ayni para birimindeki urunlerle odeme yapabilirsiniz"
 }

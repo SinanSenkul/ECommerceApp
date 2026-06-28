@@ -6,11 +6,13 @@ import { AppColors } from "../../styles/colors";
 import { AppFonts } from "../../styles/fonts";
 import { AntDesign } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { formatPrice } from "../../helpers/currency";
 
 interface ICartItem {
   imageURL?: string;
   title?: string;
   price?: number | string;
+  currency?: string;
   onDeletePress?: () => void;
 }
 
@@ -18,6 +20,7 @@ const CartItem: FC<ICartItem> = ({
   imageURL,
   title,
   price,
+  currency,
   onDeletePress,
 }) => {
   const [imgSource, setImgSource] = useState(imageURL);
@@ -39,7 +42,7 @@ const CartItem: FC<ICartItem> = ({
       </View>
       <View style={styles.detailsContainer}>
         <AppText style={styles.title}>{title}</AppText>
-        <AppText style={styles.price}>{price} TL</AppText>
+        <AppText style={styles.price}>{formatPrice(price, currency)}</AppText>
       </View>
       <View style={styles.deleteContainer}>
         <Pressable style={styles.deletePressable} onPress={onDeletePress}>

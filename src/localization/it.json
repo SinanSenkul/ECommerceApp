@@ -159,5 +159,8 @@
   "Send a new verification email to continue.": "Invia una nuova email di verifica per continuare.",
   "Resend verification email": "Reinvia email di verifica",
   "Verification email sent": "Email di verifica inviata",
-  "Could not send verification email": "Impossibile inviare l'email di verifica"
+  "Could not send verification email": "Impossibile inviare l'email di verifica",
+  "Currency": "Valuta",
+  "You can only add items with the same currency to cart": "Puoi aggiungere al carrello solo articoli con la stessa valuta",
+  "You can only checkout items with the same currency": "Puoi pagare solo articoli con la stessa valuta"
 }

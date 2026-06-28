@@ -1,11 +1,11 @@
 import { StyleSheet, View } from "react-native";
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import HomeHeader from "../../components/headers/HomeHeader";
 import AppSafeView from "../../components/views/AppSafeView";
 import ProfileSectionButton from "../../components/buttons/ProfileSectionButton";
 import { sharedStyles } from "../../styles/sharedStyles";
 import { vs } from "react-native-size-matters";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import AppButton from "../../components/buttons/AppButton";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -21,8 +21,6 @@ import {
   switchToDayMode,
 } from "../../store/reducers/dayNightModeSlice";
 import { requireVerifiedUser } from "../../helpers/authGuards";
-import { getSellerSaleNotifications } from "../../config/dataServices";
-import { setSaleNotificationBadgeCount } from "../../services/saleNotificationBadgeService";
 import { unregisterPushNotificationsForCurrentUser } from "../../services/pushNotificationService";
 
 interface IProfileScreen {
@@ -33,7 +31,6 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch(); //redux
   const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
-  const [pendingSaleApprovalCount, setPendingSaleApprovalCount] = useState(0);
   const authInstance = getAuth();
 
   const { t } = useTranslation(); //localization
@@ -55,34 +52,6 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
     const unsubscribe = onAuthStateChanged(authInstance, setCurrentUser);
     return unsubscribe;
   }, [authInstance]);
-
-  const loadPendingSaleApprovalState = useCallback(async () => {
-    if (!authInstance.currentUser) {
-      setPendingSaleApprovalCount(0);
-      setSaleNotificationBadgeCount(0);
-      return;
-    }
-
-    try {
-      const saleNotifications = (await getSellerSaleNotifications()) as {
-        status?: string;
-      }[];
-      const pendingCount = saleNotifications.filter(
-        (notification) => notification.status !== "shipped",
-      ).length;
-      setPendingSaleApprovalCount(pendingCount);
-      setSaleNotificationBadgeCount(pendingCount);
-    } catch (error) {
-      console.error("sale approval notification state could not be fetched: ", error);
-      setPendingSaleApprovalCount(0);
-    }
-  }, [authInstance]);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadPendingSaleApprovalState();
-    }, [loadPendingSaleApprovalState]),
-  );
 
   const LoggedOut = async () => {
     try {
@@ -138,28 +107,6 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
           <ProfileSectionButton
             title={t("Profile Information")}
             onPress={() => navigateIfVerified("ProfileInfoScreen")}
-          />
-          <ProfileSectionButton
-            title={t("My Orders")}
-            onPress={() => navigateIfVerified("MyOrdersScreen")}
-          />
-          <ProfileSectionButton
-            title={t("Sell Items")}
-            onPress={() => navigateIfVerified("SellItemScreen")}
-          />
-          <ProfileSectionButton
-            title={t("Your Items on Sale")}
-            onPress={() => navigateIfVerified("ItemsOnSaleScreen")}
-          />
-          <ProfileSectionButton
-            title={t("Orders Waiting Approval")}
-            iconName={
-              pendingSaleApprovalCount > 0
-                ? "notifications"
-                : "notifications-outline"
-            }
-            badgeCount={pendingSaleApprovalCount}
-            onPress={() => navigateIfVerified("OrderApprovalScreen")}
           />
           <ProfileSectionButton
             title={t("Language")}

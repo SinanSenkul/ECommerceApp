@@ -14,7 +14,7 @@ interface IProfileScreen {
 }
 
 const ProfileScreenUnsub: FC<IProfileScreen> = ({ username = "default" }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { t } = useTranslation(); //localization
 
   return (

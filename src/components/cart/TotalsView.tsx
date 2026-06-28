@@ -6,32 +6,34 @@ import { AppColors } from "../../styles/colors";
 import { AppFonts } from "../../styles/fonts";
 import { tax, fee } from "../../constants/constants";
 import { useTranslation } from "react-i18next";
+import { formatPrice } from "../../helpers/currency";
 
 interface ITotalView {
   price?: number;
   sum?: number;
+  currency?: string;
 }
 
-const TotalsView: FC<ITotalView> = ({ price, sum }) => {
+const TotalsView: FC<ITotalView> = ({ price, sum, currency }) => {
   const { t } = useTranslation(); //localization
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         <AppText style={styles.title}>{t("Item Price")}:</AppText>
-        <AppText>{price} ₺</AppText>
+        <AppText>{formatPrice(price, currency)}</AppText>
       </View>
       <View style={styles.row}>
         <AppText style={styles.title}>{t("Taxes")}:</AppText>
-        <AppText>{tax} ₺</AppText>
+        <AppText>{formatPrice(tax, currency)}</AppText>
       </View>
       <View style={styles.row}>
         <AppText style={styles.title}>{t("Shipping Fee")}:</AppText>
-        <AppText>{fee} ₺</AppText>
+        <AppText>{formatPrice(fee, currency)}</AppText>
       </View>
       <View style={styles.separator} />
       <View style={styles.row}>
         <AppText style={styles.title}>{t("Sum")}:</AppText>
-        <AppText>{sum}₺</AppText>
+        <AppText>{formatPrice(sum, currency)}</AppText>
       </View>
     </View>
   );

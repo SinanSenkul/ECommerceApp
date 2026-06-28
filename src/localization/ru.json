@@ -159,5 +159,8 @@
   "Send a new verification email to continue.": "Отправьте новое письмо для подтверждения, чтобы продолжить.",
   "Resend verification email": "Отправить письмо повторно",
   "Verification email sent": "Письмо для подтверждения отправлено",
-  "Could not send verification email": "Не удалось отправить письмо для подтверждения"
+  "Could not send verification email": "Не удалось отправить письмо для подтверждения",
+  "Currency": "Valyuta",
+  "You can only add items with the same currency to cart": "V korzinu mozhno dobavlyat tolko tovary v odnoi valyute",
+  "You can only checkout items with the same currency": "Oplatit mozhno tolko tovary v odnoi valyute"
 }

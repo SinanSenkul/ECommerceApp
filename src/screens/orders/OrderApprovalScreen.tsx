@@ -24,6 +24,7 @@ import {
 } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { formatPrice } from "../../helpers/currency";
 
 interface SaleNotification {
   id: string;
@@ -33,6 +34,7 @@ interface SaleNotification {
   productId?: string;
   productName?: string;
   productPrice?: number;
+  productCurrency?: string;
   orderId?: string;
   userOrderId?: string;
   status?: "unread" | "shipped";
@@ -197,7 +199,7 @@ const OrderApprovalScreen = () => {
         {t("Product:")} {item.productName || "-"}
       </AppText>
       <AppText style={styles.text}>
-        {t("Price:")} {item.productPrice ?? 0} ₺
+        {t("Price:")} {formatPrice(item.productPrice, item.productCurrency)}
       </AppText>
       <AppText style={styles.text}>
         {t("Status:")} {isShipped ? t("Shipped") : t("Ordered")}

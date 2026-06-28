@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { normalizeCurrency } from "../../helpers/currency";
 
 interface CartItem {
   id: number | string;
   price: number;
+  currency: string;
   title: string;
   imageURL: string;
 }
@@ -18,6 +20,7 @@ const state: CartState = {
 const toCartItem = (item: Partial<CartItem>): CartItem => ({
   id: item.id ?? "",
   price: Number(item.price ?? 0),
+  currency: normalizeCurrency(item.currency),
   title: item.title ?? "",
   imageURL: item.imageURL ?? "",
 });

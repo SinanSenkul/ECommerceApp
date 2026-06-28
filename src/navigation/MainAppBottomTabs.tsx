@@ -4,9 +4,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "../screens/home/HomeScreen";
 import CartScreen from "../screens/cart/CartScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
+import DealsTabScreen from "../screens/deals/DealsTabScreen";
 import { AppColors } from "../styles/colors";
 import { s, vs } from "react-native-size-matters";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import AppSafeView from "../components/views/AppSafeView";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
 
@@ -58,9 +59,13 @@ const createSwipeableTabScreen =
     );
   };
 
-const tabRoutes = ["HomeScreen", "CartScreen", "ProfileScreen"];
+const tabRoutes = ["HomeScreen", "CartScreen", "DealsTabScreen", "ProfileScreen"];
 const SwipeableHomeScreen = createSwipeableTabScreen(HomeScreen, tabRoutes);
 const SwipeableCartScreen = createSwipeableTabScreen(CartScreen, tabRoutes);
+const SwipeableDealsTabScreen = createSwipeableTabScreen(
+  DealsTabScreen,
+  tabRoutes,
+);
 const SwipeableProfileScreen = createSwipeableTabScreen(ProfileScreen, tabRoutes);
 
 export default function MainAppBottomTabs(){
@@ -98,6 +103,21 @@ export default function MainAppBottomTabs(){
                 <Ionicons name="cart" size={size} color={color} />
               ),
               title: "Cart",
+            }}
+          />
+          <Tab.Screen
+            name="DealsTabScreen"
+            component={SwipeableDealsTabScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <FontAwesome6
+                  name="handshake"
+                  regular
+                  size={size}
+                  color={color}
+                />
+              ),
+              title: "Deals",
             }}
           />
           <Tab.Screen

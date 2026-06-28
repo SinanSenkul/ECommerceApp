@@ -16,10 +16,12 @@ import { fee, tax } from "../../constants/constants";
 import { AppColors } from "../../styles/colors";
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import { normalizeCurrency } from "../../helpers/currency";
 
 const CartScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { items } = useSelector((state: RootState) => state.cartSlice);
+  const currency = normalizeCurrency(items[0]?.currency);
   const price = items.reduce((acc, item) => acc + item.price, 0); //sum up all the prices
   const sum = price > 0 ? price + tax + fee : 0;
 
@@ -72,7 +74,7 @@ const CartScreen = () => {
                 />
               )}
             />
-            <TotalsView price={price} sum={sum} />
+            <TotalsView price={price} sum={sum} currency={currency} />
             <AppButton
               title={t("Pay")}
               onPress={goToCheckout}

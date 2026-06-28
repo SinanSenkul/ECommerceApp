@@ -1,14 +1,26 @@
-export function formatFirestoreDate(ts) {
-  if (!ts?.seconds) return "—"; // guard against invalid/missing
+interface FirestoreTimestampLike {
+  seconds?: number;
+  nanoseconds?: number;
+}
 
-  // seconds → milliseconds + nanoseconds part
-  const millis = ts.seconds * 1000 + Math.floor(ts.nanoseconds / 1000000);
-
-  const date = new Date(millis);
-
-  return date.toLocaleDateString("tr-TR", {
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("tr-TR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   });
+
+export function formatFirestoreDate(ts?: FirestoreTimestampLike | Date) {
+  if (ts instanceof Date) {
+    return formatDate(ts);
+  }
+
+  if (typeof ts?.seconds !== "number") {
+    return "-";
+  }
+
+  const millis =
+    ts.seconds * 1000 + Math.floor((ts.nanoseconds ?? 0) / 1000000);
+
+  return formatDate(new Date(millis));
 }

@@ -8,9 +8,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppStyles } from "../../styles/sharedStyles";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import { normalizeCurrency, SupportedCurrency } from "../../helpers/currency";
+
+const CURRENCY_SYMBOLS: Record<SupportedCurrency, string> = {
+  TRY: "₺",
+  EUR: "€",
+  USD: "$",
+  RUB: "₽",
+  JPY: "¥",
+};
+
+const formatCardPrice = (price: number, currency?: string) =>
+  `${price} ${CURRENCY_SYMBOLS[normalizeCurrency(currency)]}`;
 
 interface ProductCardProps {
   price: number;
+  currency?: string;
   title: string;
   imageURL: string;
   onAddToCartPress: () => void;
@@ -19,6 +32,7 @@ interface ProductCardProps {
 
 const ProductCard: FC<ProductCardProps> = ({
   price,
+  currency,
   title,
   imageURL,
   onAddToCartPress,
@@ -70,7 +84,7 @@ const ProductCard: FC<ProductCardProps> = ({
         <AppText style={styles.titleText} numberOfLines={1}>
           {title}
         </AppText>
-        <AppText style={styles.priceText}>{price} ₺</AppText>
+        <AppText style={styles.priceText}>{formatCardPrice(price, currency)}</AppText>
       </View>
     </TouchableOpacity>
   );

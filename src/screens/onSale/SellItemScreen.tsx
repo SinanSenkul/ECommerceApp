@@ -30,6 +30,11 @@ import { RootState } from "../../store/store";
 import { addProductOnSale } from "../../config/dataServices";
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
+import {
+  CURRENCY_OPTIONS,
+  getDefaultCurrency,
+  SupportedCurrency,
+} from "../../helpers/currency";
 
 const MAX_IMAGE_COUNT = 5;
 
@@ -128,6 +133,8 @@ const SellItemScreen = () => {
   const { t } = useTranslation();
   const schema = useMemo(() => createSchema(t), [t]);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const [selectedCurrency, setSelectedCurrency] =
+    useState<SupportedCurrency>(getDefaultCurrency);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { mode } = useSelector((state: RootState) => state.appColor);
@@ -231,12 +238,14 @@ const SellItemScreen = () => {
       await addProductOnSale({
         productName: data.productName.trim(),
         productPrice: Number(data.productPrice),
+        productCurrency: selectedCurrency,
         stockQuantity: Number(data.stockQuantity),
         productImages,
         sellerId: verifiedUser.uid,
       });
 
       reset();
+      setSelectedCurrency(getDefaultCurrency());
       setSelectedImages([]);
       showMessage({
         message: t("Product listed successfully"),
@@ -344,6 +353,55 @@ const SellItemScreen = () => {
             placeholder={t("Product Price")}
             keyboardType="numeric"
           />
+          <View style={styles.currencyContainer}>
+            <AppText style={styles.currencyLabel}>{t("Currency")}</AppText>
+            <View style={styles.currencyOptions}>
+              {CURRENCY_OPTIONS.map((currency) => {
+                const isSelected = selectedCurrency === currency.code;
+
+                return (
+                  <TouchableOpacity
+                    key={currency.code}
+                    activeOpacity={0.8}
+                    onPress={() => setSelectedCurrency(currency.code)}
+                    style={[
+                      styles.currencyOption,
+                      {
+                        backgroundColor: isSelected
+                          ? AppColors.primary
+                          : lightMode.backgroundColor,
+                        borderColor: isSelected
+                          ? AppColors.primary
+                          : lightMode.borderColor,
+                      },
+                    ]}
+                  >
+                    <AppText
+                      style={[
+                        styles.currencyCode,
+                        { color: isSelected ? AppColors.white : AppColors.primary },
+                      ]}
+                    >
+                      {currency.code}
+                    </AppText>
+                    <AppText
+                      style={[
+                        styles.currencyName,
+                        {
+                          color: isSelected
+                            ? AppColors.white
+                            : lightMode.mutedTextColor,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {currency.label}
+                    </AppText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
           <AppTextInputController
             control={control}
             name="stockQuantity"
@@ -463,6 +521,37 @@ const styles = StyleSheet.create({
   backButton: {
     borderWidth: s(1),
     marginTop: vs(12),
+  },
+  currencyContainer: {
+    width: "85%",
+    marginBottom: vs(12),
+  },
+  currencyLabel: {
+    fontFamily: AppFonts.Bold,
+    fontSize: s(14),
+    marginBottom: vs(8),
+  },
+  currencyOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: s(8),
+  },
+  currencyOption: {
+    width: "30%",
+    minWidth: s(78),
+    minHeight: vs(48),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: s(8),
+    justifyContent: "center",
+    paddingHorizontal: s(8),
+  },
+  currencyCode: {
+    fontFamily: AppFonts.Bold,
+    fontSize: s(13),
+  },
+  currencyName: {
+    fontSize: s(11),
+    marginTop: vs(2),
   },
   loading: {
     marginVertical: vs(12),
