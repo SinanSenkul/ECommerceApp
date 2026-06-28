@@ -1,41 +1,28 @@
 # Smart E-Commerce
 
-Smart E-Commerce is a mobile marketplace app built with Expo and React Native. Users can browse products, view product details, add items to a cart, pay through Stripe PaymentSheet, manage their profile, sell their own items, and track order status.
+Smart E-Commerce is a mobile marketplace app built with Expo and React Native. Users can browse products, add items to a cart, buy through Stripe PaymentSheet, sell their own items, and manage deal activity from a dedicated Deals tab.
 
 ## Features
 
-- Email/password authentication with Firebase Auth
-- Persistent signed-in sessions using Firebase auth state and local storage
-- Product browsing with detail modal screens
-- Cart management with duplicate-item and self-purchase protection
-- Stripe PaymentSheet checkout flow
-- Firestore-backed order history
-- Order statuses: `ordered` and `shipped`
-- Buyer order list with product name, status, total price, and order date
-- Seller product listing with image upload, price, and stock quantity
-- Seller item management for active listings
-- Sale notifications when a buyer orders a seller's product
-- Seller action to mark an order as shipped
-- Profile information editing: name, address, and password
-- Localized validation, Firebase, payment, order, and seller workflow messages
-- Supported languages: English, Turkish, Spanish, German, Italian, French, Russian, and Portuguese
-- English fallback for unsupported languages
+- Firebase email/password authentication with email verification guards
+- Product browsing, search, detail pages, and image galleries
+- Cart with duplicate-item, self-purchase, and mixed-currency protection
+- Seller listings with image upload, stock quantity, and currency selection
+- Supported listing currencies: TRY, EUR, USD, RUB, and JPY
+- Device-locale currency defaults, with TRY fallback for older listings
+- Deals tab for My Orders, Sell Items, Your Items on Sale, and Orders Waiting Approval
+- Seller order approval workflow with sale notifications and shipped status
+- Stripe PaymentSheet checkout with backend-side price, stock, and user validation
+- Webhook-based order fulfillment after successful Stripe payment
+- Localized UI across English, Turkish, Spanish, German, Italian, French, Russian, and Portuguese
 
 ## Tech Stack
 
-- Expo SDK 54
-- React 19
-- React Native 0.81
-- TypeScript
-- React Navigation
-- Redux Toolkit and Redux Persist
-- Firebase Auth
-- Cloud Firestore
-- Stripe React Native
-- React Hook Form
-- Yup
-- i18next and react-i18next
-- Expo Image Picker
+- Expo SDK 54, React 19, React Native 0.81, TypeScript
+- React Navigation, Redux Toolkit, Redux Persist
+- Firebase Auth and Cloud Firestore
+- Stripe React Native and a Node/Express payment server
+- React Hook Form, Yup, i18next
 
 ## Project Structure
 
@@ -43,136 +30,78 @@ Smart E-Commerce is a mobile marketplace app built with Expo and React Native. U
 src/
   components/      Shared UI components
   config/          Firebase, Stripe, and data service helpers
+  helpers/         Auth, date, and currency helpers
   localization/    Translation files and i18n setup
-  navigation/      Stack and tab navigation
-  screens/         Auth, cart, home, profile, seller, and language screens
-  services/        Payment service logic
-  store/           Redux slices and store setup
-  styles/          Shared colors, fonts, and layout styles
+  navigation/      Stack and bottom-tab navigation
+  screens/         Auth, home, cart, deals, profile, seller, and order screens
+  services/        Payment, push, and sale-notification services
+  store/           Redux slices and persisted store setup
 stripe-test-server/
-  server.js        Test-mode Stripe PaymentSheet backend
+  server.js        Stripe PaymentSheet and webhook fulfillment backend
 ```
-
-## Localization
-
-The app currently includes these languages:
-
-- English (`en`)
-- Turkish (`tr`)
-- Spanish (`es`)
-- German (`de`)
-- Italian (`it`)
-- French (`fr`)
-- Russian (`ru`)
-- Portuguese (`pt`)
-
-Translations live in `src/localization`. The app uses English as the fallback language when a requested language is not supported.
 
 ## Payments
 
-The app uses Stripe PaymentSheet with a backend-owned checkout flow. The mobile app sends a Firebase ID token and item IDs to the backend, while the backend verifies the user, fetches product prices from Firestore, calculates the total, creates a Stripe PaymentIntent, and fulfills paid orders from a Stripe webhook.
-
-The current payment backend can be deployed as a Render web service. The app calls the hosted `/payment-sheet` endpoint during checkout, while Stripe secret keys, Firebase Admin credentials, and webhook signing secrets stay only on the backend service.
+Checkout is backend-owned. The app sends a Firebase ID token and item IDs to `/payment-sheet`; the server verifies the user, reads Firestore products, calculates the total, creates a Stripe PaymentIntent, and fulfills the order from Stripe's `payment_intent.succeeded` webhook.
 
 Required Expo public environment variables:
 
 ```env
 EXPO_PUBLIC_USE_STRIPE_PAYMENTS=true
 EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
-EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT=https://your-render-service.onrender.com/payment-sheet
+EXPO_PUBLIC_PAYMENT_SHEET_ENDPOINT=https://your-payment-server.com/payment-sheet
 ```
 
-For local testing, the repository includes `stripe-test-server`, a Node/Express backend for Stripe test-mode PaymentIntents and webhook fulfillment. Do not commit secret keys. Keep Stripe secret keys and Firebase service-account credentials only in local or hosted backend environment variables.
-
-## Getting Started
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the Expo development server:
-
-```bash
-npm start
-```
-
-Run on Android:
-
-```bash
-npm run android
-```
-
-Run on iOS:
-
-```bash
-npm run ios
-```
-
-Run on web:
-
-```bash
-npm run web
-```
-
-## Stripe Test Server
-
-From the `stripe-test-server` folder:
-
-```bash
-npm install
-npm start
-```
-
-The server expects:
+Payment server environment variables:
 
 ```env
 STRIPE_SECRET_KEY=sk_test_your_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"your-project-id"}
+CHECKOUT_TAX_AMOUNT=15
+CHECKOUT_SHIPPING_FEE=10
 PORT=4242
 ```
 
-Use the Stripe CLI to forward local webhook events:
+For local webhook testing:
 
 ```bash
 stripe listen --forward-to localhost:4242/webhook
 ```
 
-For real device testing or App Store review, the PaymentSheet endpoint must be available over public HTTPS.
+## Getting Started
 
-For this project, Render is used to provide that public HTTPS endpoint for the Stripe test server.
-
-## Firebase
-
-Firebase is used for:
-
-- Authentication
-- User profile data
-- Products on sale
-- User carts
-- Orders
-- Sale notifications
-
-Firebase configuration is in `src/config/firebase.ts`.
-
-## Scripts
+Install app dependencies:
 
 ```bash
-npm start        # Start Expo
-npm run android  # Build/run Android
-npm run ios      # Build/run iOS
-npm run web      # Start Expo web
+npm install
 ```
 
-## Current Notes
+Start Expo:
 
-- The app is configured for portrait orientation.
-- iOS bundle identifier: `com.anonymous.ecommerceapp`
-- Android package: `com.anonymous.ecommerceapp`
-- App version in Expo config: `1.0.6`
-- Some TypeScript navigation typing cleanup is still pending in older screens.
+```bash
+npm start
+```
+
+Run the payment server:
+
+```bash
+cd stripe-test-server
+npm install
+npm start
+```
+
+Useful app scripts:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+## Testing Notes
+
+Because Stripe React Native uses native code, realistic payment testing should use a development build or TestFlight/internal Android build rather than Expo Go. For physical devices, the payment endpoint must be reachable from the device, usually through a public HTTPS backend or tunnel.
 
 ## Author
 
