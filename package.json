@@ -6,7 +6,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest --watchAll=false",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@expo/metro-config": "~54.0.14",
@@ -53,8 +55,18 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@types/jest": "29.5.14",
     "@types/react": "~19.1.0",
+    "jest": "~29.7.0",
+    "jest-expo": "~54.0.17",
     "typescript": "~5.9.2"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "cacheDirectory": ".jest-cache",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo|expo-.*|@expo(nent)?/.*|@expo-google-fonts/.*|@react-navigation/.*|@reduxjs/toolkit|immer)/)"
+    ]
   },
   "private": true
 }
