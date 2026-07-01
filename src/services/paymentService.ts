@@ -1,3 +1,8 @@
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+} from "./crashlyticsService";
+
 interface MockPaymentParams {
   amount: number;
   currency: string;
@@ -75,6 +80,14 @@ export const createStripePayment = async ({
   initPaymentSheet,
   presentPaymentSheet,
 }: StripePaymentParams): Promise<PaymentResult> => {
+  const paymentAttributes = {
+    currency,
+    item_count: itemIds.length,
+    payment_provider: "stripe",
+  };
+
+  logCrashlyticsBreadcrumb("payment_sheet_requested", paymentAttributes);
+
   let response: Response;
   try {
     response = await fetch(endpoint, {
@@ -93,6 +106,11 @@ export const createStripePayment = async ({
       }),
     });
   } catch (error) {
+    logCrashlyticsBreadcrumb("payment_sheet_backend_unavailable", {
+      ...paymentAttributes,
+      dev_mock_fallback: __DEV__,
+    });
+
     if (__DEV__) {
       console.warn("Stripe test endpoint unavailable, using mock payment.", error);
       return createMockPayment({
@@ -103,11 +121,17 @@ export const createStripePayment = async ({
       });
     }
 
+    recordCrashlyticsError(error, "payment_sheet_backend_unavailable", paymentAttributes);
     throw error;
   }
 
   if (!response.ok) {
-    throw new Error("Stripe payment setup failed");
+    const setupError = new Error("Stripe payment setup failed");
+    recordCrashlyticsError(setupError, "payment_sheet_backend_rejected", {
+      ...paymentAttributes,
+      status_code: response.status,
+    });
+    throw setupError;
   }
 
   const paymentSheet = (await response.json()) as {
@@ -118,8 +142,12 @@ export const createStripePayment = async ({
   };
 
   if (!paymentSheet.paymentIntentClientSecret) {
-    throw new Error("Stripe payment setup failed");
+    const setupError = new Error("Stripe payment setup failed");
+    recordCrashlyticsError(setupError, "payment_sheet_missing_client_secret", paymentAttributes);
+    throw setupError;
   }
+
+  logCrashlyticsBreadcrumb("payment_sheet_response_received", paymentAttributes);
 
   const { error: initError } = await initPaymentSheet({
     merchantDisplayName,
@@ -131,14 +159,21 @@ export const createStripePayment = async ({
   });
 
   if (initError) {
-    throw new Error(initError.message ?? "Stripe payment setup failed");
+    const setupError = new Error(initError.message ?? "Stripe payment setup failed");
+    recordCrashlyticsError(setupError, "payment_sheet_init_failed", paymentAttributes);
+    throw setupError;
   }
 
+  logCrashlyticsBreadcrumb("payment_sheet_opened", paymentAttributes);
   const { error: paymentError } = await presentPaymentSheet();
 
   if (paymentError) {
-    throw new Error(paymentError.message ?? "Stripe payment failed");
+    const stripeError = new Error(paymentError.message ?? "Stripe payment failed");
+    recordCrashlyticsError(stripeError, "payment_sheet_present_failed", paymentAttributes);
+    throw stripeError;
   }
+
+  logCrashlyticsBreadcrumb("payment_sheet_succeeded", paymentAttributes);
 
   return {
     id: paymentSheet.paymentIntentId ?? `stripe_${Date.now()}`,

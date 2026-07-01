@@ -22,6 +22,11 @@ import { AppFonts } from "../../styles/fonts";
 import { RootState } from "../../store/store";
 import SignInAppButton from "../../components/buttons/SignInAppButton";
 import LaunchScreen from "./LaunchScreen";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+  setCrashlyticsUser,
+} from "../../services/crashlyticsService";
 
 const createSchema = (translate: (key: string) => string) =>
   yup
@@ -75,15 +80,19 @@ const SignInScreen = () => {
 
   const signIn = async (data: formData) => {
     try {
-      await signInWithEmailAndPassword(
+      logCrashlyticsBreadcrumb("auth_sign_in_started");
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         data.userName,
         data.password,
       );
+      await setCrashlyticsUser(userCredential.user.uid);
+      logCrashlyticsBreadcrumb("auth_sign_in_succeeded");
       dispatch(emptyItems());
       resetToMainApp(navigation);
     } catch (error: any) {
       let errorMessage = t("Sign-in failed");
+      let shouldRecordError = false;
       if (error.code === "auth/user-not-found") {
         errorMessage = t("User not found");
       } else if (
@@ -99,6 +108,17 @@ const SignInScreen = () => {
         errorMessage = t("Network request failed");
       } else {
         console.log("sign-in error: ", error);
+        shouldRecordError = true;
+      }
+
+      logCrashlyticsBreadcrumb("auth_sign_in_failed", {
+        auth_error_code: error.code ?? "unknown",
+      });
+
+      if (shouldRecordError) {
+        recordCrashlyticsError(error, "auth_sign_in_failed", {
+          auth_error_code: error.code ?? "unknown",
+        });
       }
       showMessage({
         message: errorMessage,

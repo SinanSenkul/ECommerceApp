@@ -21,6 +21,11 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { showMessage } from "react-native-flash-message";
 import { useTranslation } from "react-i18next";
 import { db } from "../../config/firebase";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+  setCrashlyticsUser,
+} from "../../services/crashlyticsService";
 
 const createSchema = (translate: (key: string) => string) =>
   yup
@@ -77,11 +82,13 @@ const SignUpScreen = () => {
     }
     try {
       //const auth = getAuth();
+      logCrashlyticsBreadcrumb("auth_sign_up_started");
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.emailAddress.trim(),
         data.password,
       );
+      await setCrashlyticsUser(userCredential.user.uid);
       await sendEmailVerification(userCredential.user);
       const userProfile = {
         uid: userCredential.user.uid,
@@ -103,10 +110,12 @@ const SignUpScreen = () => {
         icon: "success",
         position: "top",
       });
+      logCrashlyticsBreadcrumb("auth_sign_up_succeeded");
       // Navigate to login or home screen
       resetToMainApp(navigation);
     } catch (error: any) {
       let message = t("Sign-up failed");
+      let shouldRecordError = false;
       if (error.code === "auth/email-already-in-use") {
         message = t("Email is already in use");
       } else if (error.code === "auth/weak-password") {
@@ -115,6 +124,18 @@ const SignUpScreen = () => {
         message = t("Invalid email address");
       } else if (error.code === "auth/network-request-failed") {
         message = t("Network request failed");
+      } else {
+        shouldRecordError = true;
+      }
+
+      logCrashlyticsBreadcrumb("auth_sign_up_failed", {
+        auth_error_code: error.code ?? "unknown",
+      });
+
+      if (shouldRecordError) {
+        recordCrashlyticsError(error, "auth_sign_up_failed", {
+          auth_error_code: error.code ?? "unknown",
+        });
       }
       showMessage({
         message: message,

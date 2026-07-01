@@ -24,6 +24,10 @@ import { useStripe } from "@stripe/stripe-react-native";
 import { isStripeConfigured, stripeConfig } from "../../config/stripe";
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { normalizeCurrency } from "../../helpers/currency";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+} from "../../services/crashlyticsService";
 
 const CheckoutScreen = () => {
   const { t } = useTranslation();
@@ -111,6 +115,11 @@ const CheckoutScreen = () => {
   }, [reset, user?.email]);
 
   const saveOrder = async (formData: formData) => {
+    logCrashlyticsBreadcrumb("checkout_confirm_pressed", {
+      currency,
+      item_count: items.length,
+    });
+
     try {
       const verifiedUser = await requireVerifiedUser(t);
       if (!verifiedUser) {
@@ -139,6 +148,11 @@ const CheckoutScreen = () => {
       setIsPaying(true);
 
       if (!isStripeConfigured) {
+        recordCrashlyticsError(
+          new Error("Payment system is not configured"),
+          "checkout_payment_not_configured",
+          { currency, item_count: items.length },
+        );
         Alert.alert(
           t("Payment failed"),
           t("Payment system is not configured"),
@@ -163,6 +177,10 @@ const CheckoutScreen = () => {
 
       dispatch(emptyItems());
       navigation.goBack();
+      logCrashlyticsBreadcrumb("checkout_payment_completed", {
+        currency,
+        item_count: items.length,
+      });
       showMessage({
         message: t("Payment completed successfully"),
         type: "success",
@@ -173,6 +191,10 @@ const CheckoutScreen = () => {
       });
     } catch (error) {
       console.error(t("Error saving order "), error);
+      recordCrashlyticsError(error, "checkout_payment_failed", {
+        currency,
+        item_count: items.length,
+      });
       const errorMessage =
         error instanceof Error && error.message === "Product is out of stock"
           ? t("Product is out of stock")

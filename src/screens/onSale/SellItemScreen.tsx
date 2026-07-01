@@ -2,8 +2,10 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -35,6 +37,10 @@ import {
   getDefaultCurrency,
   SupportedCurrency,
 } from "../../helpers/currency";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+} from "../../services/crashlyticsService";
 
 const MAX_IMAGE_COUNT = 5;
 
@@ -135,6 +141,7 @@ const SellItemScreen = () => {
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [selectedCurrency, setSelectedCurrency] =
     useState<SupportedCurrency>(getDefaultCurrency);
+  const [isCurrencyPickerVisible, setIsCurrencyPickerVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { mode } = useSelector((state: RootState) => state.appColor);
@@ -151,6 +158,9 @@ const SellItemScreen = () => {
   const { control, handleSubmit, reset } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
+  const selectedCurrencyOption =
+    CURRENCY_OPTIONS.find((currency) => currency.code === selectedCurrency) ??
+    CURRENCY_OPTIONS[0];
 
   const pickImages = async () => {
     const remainingSlots = MAX_IMAGE_COUNT - selectedImages.length;
@@ -233,6 +243,10 @@ const SellItemScreen = () => {
 
     try {
       setIsSubmitting(true);
+      logCrashlyticsBreadcrumb("product_listing_started", {
+        currency: selectedCurrency,
+        image_count: selectedImages.length,
+      });
       const productImages = selectedImages.map(getImageDataUri);
 
       await addProductOnSale({
@@ -247,6 +261,10 @@ const SellItemScreen = () => {
       reset();
       setSelectedCurrency(getDefaultCurrency());
       setSelectedImages([]);
+      logCrashlyticsBreadcrumb("product_listing_succeeded", {
+        currency: selectedCurrency,
+        image_count: productImages.length,
+      });
       showMessage({
         message: t("Product listed successfully"),
         type: "success",
@@ -259,6 +277,10 @@ const SellItemScreen = () => {
     } catch (error) {
       const errorText = getErrorText(error);
       console.log("sell item error: ", errorText, error);
+      recordCrashlyticsError(error, "product_listing_failed", {
+        currency: selectedCurrency,
+        image_count: selectedImages.length,
+      });
       Alert.alert(
         t("Product listing failed"),
         t("Product could not be listed. Please try again"),
@@ -355,52 +377,124 @@ const SellItemScreen = () => {
           />
           <View style={styles.currencyContainer}>
             <AppText style={styles.currencyLabel}>{t("Currency")}</AppText>
-            <View style={styles.currencyOptions}>
-              {CURRENCY_OPTIONS.map((currency) => {
-                const isSelected = selectedCurrency === currency.code;
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setIsCurrencyPickerVisible(true)}
+              style={[
+                styles.currencySelect,
+                {
+                  backgroundColor: lightMode.backgroundColor,
+                  borderColor: lightMode.borderColor,
+                },
+              ]}
+            >
+              <View style={styles.currencySelectText}>
+                <Text
+                  style={[
+                    styles.currencyCode,
+                    { color: isNight ? AppColors.white : AppColors.black },
+                  ]}
+                >
+                  {selectedCurrencyOption.code}
+                </Text>
+                <Text
+                  style={[
+                    styles.currencyName,
+                    { color: lightMode.mutedTextColor },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {selectedCurrencyOption.label}
+                </Text>
+              </View>
+              <Ionicons
+                name="chevron-down"
+                size={s(18)}
+                color={isNight ? AppColors.white : AppColors.black}
+              />
+            </TouchableOpacity>
 
-                return (
-                  <TouchableOpacity
-                    key={currency.code}
-                    activeOpacity={0.8}
-                    onPress={() => setSelectedCurrency(currency.code)}
-                    style={[
-                      styles.currencyOption,
-                      {
-                        backgroundColor: isSelected
-                          ? AppColors.primary
-                          : lightMode.backgroundColor,
-                        borderColor: isSelected
-                          ? AppColors.primary
-                          : lightMode.borderColor,
-                      },
-                    ]}
-                  >
-                    <AppText
-                      style={[
-                        styles.currencyCode,
-                        { color: isSelected ? AppColors.white : AppColors.primary },
-                      ]}
-                    >
-                      {currency.code}
-                    </AppText>
-                    <AppText
-                      style={[
-                        styles.currencyName,
-                        {
-                          color: isSelected
-                            ? AppColors.white
-                            : lightMode.mutedTextColor,
-                        },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {currency.label}
-                    </AppText>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <Modal
+              transparent
+              animationType="fade"
+              visible={isCurrencyPickerVisible}
+              onRequestClose={() => setIsCurrencyPickerVisible(false)}
+            >
+              <View style={styles.currencyModalLayer}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setIsCurrencyPickerVisible(false)}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View
+                  style={[
+                    styles.currencyMenu,
+                    {
+                      backgroundColor: lightMode.surfaceColor,
+                      borderColor: lightMode.borderColor,
+                    },
+                  ]}
+                >
+                  <AppText style={styles.currencyMenuTitle} variant="bold">
+                    {t("Currency")}
+                  </AppText>
+                  {CURRENCY_OPTIONS.map((currency) => {
+                    const isSelected = selectedCurrency === currency.code;
+
+                    return (
+                      <TouchableOpacity
+                        key={currency.code}
+                        activeOpacity={0.85}
+                        onPress={() => {
+                          setSelectedCurrency(currency.code);
+                          setIsCurrencyPickerVisible(false);
+                        }}
+                        style={[
+                          styles.currencyMenuOption,
+                          {
+                            borderColor: lightMode.borderColor,
+                            backgroundColor: isSelected
+                              ? lightMode.backgroundColor
+                              : lightMode.surfaceColor,
+                          },
+                        ]}
+                      >
+                        <View style={styles.currencySelectText}>
+                          <Text
+                            style={[
+                              styles.currencyCode,
+                              {
+                                color: isNight
+                                  ? AppColors.white
+                                  : AppColors.black,
+                              },
+                            ]}
+                          >
+                            {currency.code}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.currencyName,
+                              { color: lightMode.mutedTextColor },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {currency.label}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark"
+                            size={s(18)}
+                            color={isNight ? AppColors.white : AppColors.black}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </Modal>
           </View>
           <AppTextInputController
             control={control}
@@ -531,27 +625,58 @@ const styles = StyleSheet.create({
     fontSize: s(14),
     marginBottom: vs(8),
   },
-  currencyOptions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: s(8),
-  },
-  currencyOption: {
-    width: "30%",
-    minWidth: s(78),
-    minHeight: vs(48),
+  currencySelect: {
+    minHeight: vs(52),
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: s(8),
-    justifyContent: "center",
-    paddingHorizontal: s(8),
+    paddingHorizontal: s(12),
+    paddingVertical: vs(8),
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  currencySelectText: {
+    flex: 1,
+    marginRight: s(10),
   },
   currencyCode: {
     fontFamily: AppFonts.Bold,
-    fontSize: s(13),
+    fontSize: s(14),
   },
   currencyName: {
-    fontSize: s(11),
+    fontFamily: AppFonts.Medium,
+    fontSize: s(12),
     marginTop: vs(2),
+  },
+  currencyModalLayer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.42)",
+    justifyContent: "center",
+    paddingHorizontal: sharedStyles.paddingHorizontal,
+  },
+  currencyMenu: {
+    width: "100%",
+    maxWidth: s(360),
+    alignSelf: "center",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: s(8),
+    paddingHorizontal: s(12),
+    paddingVertical: vs(12),
+  },
+  currencyMenuTitle: {
+    fontSize: s(16),
+    marginBottom: vs(8),
+  },
+  currencyMenuOption: {
+    minHeight: vs(52),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: s(8),
+    paddingHorizontal: s(12),
+    paddingVertical: vs(8),
+    marginTop: vs(8),
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   loading: {
     marginVertical: vs(12),

@@ -10,10 +10,13 @@ Smart E-Commerce is a mobile marketplace app built with Expo and React Native. U
 - Seller listings with image upload, stock quantity, and currency selection
 - Supported listing currencies: TRY, EUR, USD, RUB, and JPY
 - Device-locale currency defaults, with TRY fallback for older listings
+- Select-style currency picker for listing items
 - Deals tab for My Orders, Sell Items, Your Items on Sale, and Orders Waiting Approval
 - Seller order approval workflow with sale notifications and shipped status
 - Stripe PaymentSheet checkout with backend-side price, stock, and user validation
 - Webhook-based order fulfillment after successful Stripe payment
+- Push notification registration and sale notification badge sync
+- Firebase Crashlytics breadcrumbs and non-fatal reporting around auth, checkout, product listing, and seller order approval
 - Jest coverage for currency helpers, cart reducer behavior, and payment service request/error handling
 - Localized UI across English, Turkish, Spanish, German, Italian, French, Russian, and Portuguese
 
@@ -23,6 +26,7 @@ Smart E-Commerce is a mobile marketplace app built with Expo and React Native. U
 - Expo Development Client for native-device testing
 - React Navigation, Redux Toolkit, Redux Persist
 - Firebase Auth and Cloud Firestore
+- React Native Firebase Crashlytics
 - Stripe React Native and a Node/Express payment server
 - React Hook Form, Yup, i18next
 - Jest and jest-expo
@@ -37,7 +41,7 @@ src/
   localization/    Translation files and i18n setup
   navigation/      Stack and bottom-tab navigation
   screens/         Auth, home, cart, deals, profile, seller, and order screens
-  services/        Payment, push, and sale-notification services
+  services/        Crashlytics, payment, push, and sale-notification services
   store/           Redux slices and persisted store setup
 stripe-test-server/
   server.js        Stripe PaymentSheet and webhook fulfillment backend
@@ -72,6 +76,19 @@ For local webhook testing:
 stripe listen --forward-to localhost:4242/webhook
 ```
 
+## Crash Reporting
+
+Crashlytics is wired through React Native Firebase. The app records automatic native/JavaScript crashes, syncs the current Firebase UID with Crashlytics, and adds breadcrumbs/non-fatal errors around risky flows such as sign-in, sign-up, checkout, product listing, and order approval.
+
+Native Firebase config files are required before creating a new EAS build:
+
+```text
+GoogleService-Info.plist
+google-services.json
+```
+
+These files come from Firebase Console and must match the app identifiers in `app.json`.
+
 ## Getting Started
 
 Install app dependencies:
@@ -89,7 +106,7 @@ npm start
 Start Expo for the development build:
 
 ```bash
-npx expo start --dev-client
+npx expo start --dev-client --host lan
 ```
 
 Run the payment server:
@@ -113,6 +130,8 @@ npm run test:watch
 ## Testing Notes
 
 Because Stripe React Native and push notifications use native behavior, realistic device testing should use a development build or TestFlight/internal Android build rather than Expo Go. For physical devices, the payment endpoint must be reachable from the device, usually through a public HTTPS backend or tunnel.
+
+Crashlytics is also native, so it requires a fresh development or production build after the Firebase native config files are added.
 
 Run unit tests:
 

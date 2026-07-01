@@ -23,6 +23,10 @@ import {
   syncSaleNotificationBadgeCount,
 } from "./src/services/saleNotificationBadgeService";
 import { registerPushNotificationsForCurrentUser } from "./src/services/pushNotificationService";
+import {
+  logCrashlyticsBreadcrumb,
+  setCrashlyticsUser,
+} from "./src/services/crashlyticsService";
 
 const LoggedOutDayModeSync = () => {
   const dispatch = useDispatch();
@@ -70,6 +74,20 @@ const PushNotificationRegistration = () => {
   return null;
 };
 
+const CrashlyticsSync = () => {
+  useEffect(() => {
+    logCrashlyticsBreadcrumb("app_mounted");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCrashlyticsUser(user?.uid);
+      logCrashlyticsBreadcrumb(user ? "auth_user_active" : "auth_user_cleared");
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return null;
+};
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     "Nunito-Bold": require("./src/assets/fonts/Nunito-Bold.ttf"),
@@ -99,8 +117,9 @@ export default function App() {
       <Provider store={store}>
         <PersistGate persistor={persistor}>
           <LoggedOutDayModeSync />
-          <SaleNotificationBadgeSync />
+          <CrashlyticsSync />
           <PushNotificationRegistration />
+          <SaleNotificationBadgeSync />
           <I18nextProvider i18n={i18n}>
             <StripeProvider publishableKey={stripeConfig.publishableKey}>
               <NavigationContainer>

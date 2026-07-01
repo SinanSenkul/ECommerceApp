@@ -1,5 +1,10 @@
 import { createStripePayment } from "../paymentService";
 
+jest.mock("../crashlyticsService", () => ({
+  logCrashlyticsBreadcrumb: jest.fn(),
+  recordCrashlyticsError: jest.fn(),
+}));
+
 const fetchMock = jest.fn();
 
 Object.defineProperty(global, "fetch", {

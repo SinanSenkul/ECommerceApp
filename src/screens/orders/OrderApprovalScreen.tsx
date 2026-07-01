@@ -25,6 +25,10 @@ import {
 import { useTranslation } from "react-i18next";
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { formatPrice } from "../../helpers/currency";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+} from "../../services/crashlyticsService";
 
 interface SaleNotification {
   id: string;
@@ -84,6 +88,7 @@ const OrderApprovalScreen = () => {
   const loadNotifications = async () => {
     try {
       setIsLoading(true);
+      logCrashlyticsBreadcrumb("order_approval_notifications_loading");
       const verifiedUser = await requireVerifiedUser(t);
       if (!verifiedUser) {
         setNotifications([]);
@@ -99,6 +104,19 @@ const OrderApprovalScreen = () => {
             getNotificationTime(firstNotification),
         );
       setNotifications(sortedNotifications);
+      logCrashlyticsBreadcrumb("order_approval_notifications_loaded", {
+        notification_count: sortedNotifications.length,
+      });
+    } catch (error) {
+      console.error("order approval notifications failed: ", error);
+      recordCrashlyticsError(error, "order_approval_notifications_failed");
+      showMessage({
+        message: t("Order update failed"),
+        type: "danger",
+        duration: 1200,
+        floating: true,
+        icon: "danger",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -134,6 +152,9 @@ const OrderApprovalScreen = () => {
 
     try {
       setUpdatingNotificationId(notification.id);
+      logCrashlyticsBreadcrumb("order_approval_started", {
+        product_id: notification.productId,
+      });
       await markSaleNotificationOrderAsShipped({
         notificationId: notification.id,
         buyerId: notification.buyerId,
@@ -146,6 +167,9 @@ const OrderApprovalScreen = () => {
           (currentNotification) => currentNotification.id !== notification.id,
         ),
       );
+      logCrashlyticsBreadcrumb("order_approval_succeeded", {
+        product_id: notification.productId,
+      });
       showMessage({
         message: t("Order marked as shipped"),
         type: "success",
@@ -155,6 +179,9 @@ const OrderApprovalScreen = () => {
       });
     } catch (error) {
       console.error("order status update failed: ", error);
+      recordCrashlyticsError(error, "order_approval_failed", {
+        product_id: notification.productId,
+      });
       showMessage({
         message: t("Order update failed"),
         type: "danger",

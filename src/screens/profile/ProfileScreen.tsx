@@ -22,6 +22,11 @@ import {
 } from "../../store/reducers/dayNightModeSlice";
 import { requireVerifiedUser } from "../../helpers/authGuards";
 import { unregisterPushNotificationsForCurrentUser } from "../../services/pushNotificationService";
+import {
+  logCrashlyticsBreadcrumb,
+  recordCrashlyticsError,
+  setCrashlyticsUser,
+} from "../../services/crashlyticsService";
 
 interface IProfileScreen {
   username?: string;
@@ -55,12 +60,16 @@ const ProfileScreen: FC<IProfileScreen> = ({ username = "default" }) => {
 
   const LoggedOut = async () => {
     try {
+      logCrashlyticsBreadcrumb("auth_logout_started");
       dispatch(emptyItems());
       dispatch(switchToDayMode());
       await unregisterPushNotificationsForCurrentUser();
       await signOut(authInstance);
+      await setCrashlyticsUser(null);
+      logCrashlyticsBreadcrumb("auth_logout_succeeded");
     } catch (e) {
       console.error("logout error: ", e);
+      recordCrashlyticsError(e, "auth_logout_failed");
     }
   };
 
