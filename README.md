@@ -14,15 +14,18 @@ Smart E-Commerce is a mobile marketplace app built with Expo and React Native. U
 - Seller order approval workflow with sale notifications and shipped status
 - Stripe PaymentSheet checkout with backend-side price, stock, and user validation
 - Webhook-based order fulfillment after successful Stripe payment
+- Jest coverage for currency helpers, cart reducer behavior, and payment service request/error handling
 - Localized UI across English, Turkish, Spanish, German, Italian, French, Russian, and Portuguese
 
 ## Tech Stack
 
 - Expo SDK 54, React 19, React Native 0.81, TypeScript
+- Expo Development Client for native-device testing
 - React Navigation, Redux Toolkit, Redux Persist
 - Firebase Auth and Cloud Firestore
 - Stripe React Native and a Node/Express payment server
 - React Hook Form, Yup, i18next
+- Jest and jest-expo
 
 ## Project Structure
 
@@ -83,6 +86,12 @@ Start Expo:
 npm start
 ```
 
+Start Expo for the development build:
+
+```bash
+npx expo start --dev-client
+```
+
 Run the payment server:
 
 ```bash
@@ -97,11 +106,21 @@ Useful app scripts:
 npm run android
 npm run ios
 npm run web
+npm test
+npm run test:watch
 ```
 
 ## Testing Notes
 
-Because Stripe React Native uses native code, realistic payment testing should use a development build or TestFlight/internal Android build rather than Expo Go. For physical devices, the payment endpoint must be reachable from the device, usually through a public HTTPS backend or tunnel.
+Because Stripe React Native and push notifications use native behavior, realistic device testing should use a development build or TestFlight/internal Android build rather than Expo Go. For physical devices, the payment endpoint must be reachable from the device, usually through a public HTTPS backend or tunnel.
+
+Run unit tests:
+
+```bash
+npm test
+```
+
+Current Jest coverage focuses on core app logic: currency fallback/formatting, cart normalization and duplicate handling, and Stripe PaymentSheet setup/error paths.
 
 ## Author
 
