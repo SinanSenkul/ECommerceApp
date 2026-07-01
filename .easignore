@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# Expo output
+.expo/
+dist/
+web-build/
+
+# Native/generated folders
+/ios
+/android
+.kotlin/
+
+# Local-only files
+.env*.local
+.jest-cache/
+/store.config.json
+/store/
+/tmp
+/output
+
+# Logs and platform noise
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+/.expo-start*.log
+.DS_Store
+*.tsbuildinfo

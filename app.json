@@ -52,6 +52,7 @@
       "expo-localization",
       "@react-native-firebase/app",
       "@react-native-firebase/crashlytics",
+      "./plugins/withIosModularHeaders",
       [
         "@stripe/stripe-react-native",
         {
