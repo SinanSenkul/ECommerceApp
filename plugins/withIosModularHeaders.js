@@ -15,10 +15,14 @@ const withIosModularHeaders = (config) =>
       let podfile = fs.readFileSync(podfilePath, "utf8");
 
       if (!podfile.includes(MODULAR_HEADERS_LINE)) {
-        podfile = podfile.replace(
-          /(platform :ios, min_ios_version_supported\s*)/,
-          `$1\n${MODULAR_HEADERS_LINE}\n`,
-        );
+        if (podfile.includes("prepare_react_native_project!")) {
+          podfile = podfile.replace(
+            "prepare_react_native_project!",
+            `${MODULAR_HEADERS_LINE}\n\nprepare_react_native_project!`,
+          );
+        } else {
+          podfile = `${MODULAR_HEADERS_LINE}\n\n${podfile}`;
+        }
       }
 
       fs.writeFileSync(podfilePath, podfile);
